@@ -1,45 +1,105 @@
-# AutoApply AI — Architecture (Milestone 1)
+# AutoApply AI — Architecture (M1.5)
 
 ## Overview
 
-AutoApply AI is an event-driven, modular monorepo for AI-assisted job discovery and applications. Milestone 1 establishes the foundation: infrastructure, auth, API gateway, and service stubs.
+AutoApply AI is an event-driven, modular monorepo for AI-assisted job discovery and applications. **M1.5** adds platform boundaries: domain packages, contracts, events, correlation IDs, plugin runtime, and an internal SDK — while keeping product features as stubs until M2+.
 
 ## Layers
 
-| Layer | App/Package | Responsibility |
-|-------|-------------|----------------|
+| Layer | Location | Responsibility |
+|-------|----------|------------------|
 | Presentation | `apps/web` | Next.js dashboard, Auth.js login/register |
 | API | `apps/api` | NestJS REST gateway, JWT auth, queue producer |
-| Worker | `apps/worker` | BullMQ consumer (health ping stub) |
-| Browser | `apps/browser` | Playwright health stub |
-| Database | `packages/database` | Prisma schema and client |
-| Auth | `packages/auth` | Password hashing, JWT sign/verify |
-| Shared | `packages/types`, `shared`, `config`, `ui` | DTOs, logging, env, UI |
+| Worker | `apps/worker` | BullMQ consumer |
+| Browser | `apps/browser` | Plugin runtime skeleton, stateless session lifecycle |
+| SDK | `packages/sdk` | Internal facade for apps (`sdk.user`, `sdk.jobs`, …) |
+| Domains | `packages/domains/*` | Business logic + repositories (Prisma only here) |
+| Contracts | `packages/contracts` | DTOs, API shapes, plugin interfaces, queue payloads |
+| Events | `packages/events` | Immutable `DomainEvent<T>` envelope |
+| Commands | `packages/commands` | Command bus + handler interfaces |
+| Plugins | `packages/plugins/*` | Job board providers (LinkedIn, Greenhouse, …) |
+| AI | `packages/llm`, `embeddings`, `agents`, `prompts` | Split AI concerns (stubs) |
+| Platform | `config`, `logger`, `auth`, `database`, `ui` | Cross-cutting infrastructure |
+
+## Dependency rules
+
+1. **Apps** → prefer `@autoapply/sdk`; never import `@autoapply/database` directly.
+2. **Domains** → `contracts`, `events`, `logger`, `config`; Prisma only inside repository implementations.
+3. **Plugins** → `contracts` only; no database access.
+4. **Env** → only `@autoapply/config` reads `process.env` (plus dotenv bootstrap in app entrypoints).
 
 ## Auth flow
 
-1. User registers or logs in via Auth.js (credentials) in `apps/web`.
-2. Web creates/verifies users in Postgres via Prisma.
-3. Auth.js issues a JWT session; `accessToken` is signed with `@autoapply/auth` using `AUTH_SECRET`.
-4. Web calls NestJS with `Authorization: Bearer <accessToken>`.
-5. API verifies JWT and serves protected routes (e.g. `GET /api/users/me`).
+1. User registers via `apps/web` → `@autoapply/user.createUser`.
+2. User logs in via Auth.js → `@autoapply/user.verifyUserCredentials`.
+3. Auth.js issues JWT session; API token signed via `@autoapply/auth`.
+4. Web calls API with `Authorization: Bearer` + `X-Correlation-ID`.
+5. API verifies JWT via `config.auth.secret`.
 
-## Queue flow (M1 stub)
+## Queue flow (with correlation)
 
-1. Authenticated user triggers `POST /api/users/queue/ping` from dashboard.
-2. API enqueues `health.ping` on BullMQ `health` queue.
-3. Worker consumes job and logs payload.
+1. Dashboard → `POST /api/users/queue/ping`.
+2. API generates/propagates `X-Correlation-ID`, enqueues `health.ping` with `correlationId` + `causationId`.
+3. Worker logs structured JSON including correlation fields.
 
-## M1 boundaries
+## Browser plugin runtime
 
-**In scope:** Monorepo, Docker Compose, User model, auth, health endpoints, queue wiring.
+```
+apps/browser
+  └── runtime/
+        ├── PluginManager      load("linkedin" | "greenhouse" | …)
+        ├── BrowserRuntime     launch → load cookies → execute → save → close
+        └── BrowserSessionStore  in-memory stub; Postgres encrypted store in M4
+```
 
-**Out of scope:** Resume parsing, LangGraph agents, Playwright job applications, multi-provider job boards, GraphQL, analytics.
+Job-board logic lives in `packages/plugins/*`, not in `automation` or the browser service core.
 
-## Future milestones
+## Package map (M1.5)
 
-- **M2:** Career profile — resume upload, parsing, skills
-- **M3:** Ollama integration — matching, cover letters
-- **M4:** Playwright automation — LinkedIn provider, approval workflow
-- **M5:** Analytics and notifications
-- **M6:** Multi-provider job boards
+```
+packages/
+  config/          ConfigService (config.database.url, …)
+  logger/          Structured JSON logging + correlation context
+  contracts/       DTOs, events payloads, JobBoardPlugin interface
+  events/          DomainEvent envelope + EventTypes
+  commands/        CommandBus + stub commands
+  sdk/             Internal API facade
+  domains/
+    user/          UserRepository + createUser, verifyUserCredentials
+    resume/        stub
+    jobs/          stub
+    applications/  stub
+    analytics/     stub
+    notifications/ stub
+  plugins/
+    linkedin/      stub JobBoardPlugin
+    greenhouse/    stub
+    lever/         stub
+    workday/       stub
+  llm/             stub
+  embeddings/      stub
+  agents/          stub
+  prompts/         stub
+  ai/              facade re-exporting AI packages
+  automation/      orchestration interfaces (no provider logic)
+  database/        Prisma client (internal to domains)
+  auth/            Password + JWT
+  types/           deprecated shim → contracts
+```
+
+## Milestone mapping
+
+| Milestone | Fills in |
+|-----------|----------|
+| M2 | `@autoapply/resume` — upload, parsing, skills |
+| M3 | `@autoapply/llm`, `embeddings`, `agents`, `prompts` — Ollama integration |
+| M4 | `@autoapply/plugin-linkedin`, browser cookie persistence, Playwright execution |
+| M5 | `@autoapply/analytics`, `@autoapply/notifications` |
+| M6 | Additional job board plugins |
+
+## Explicit non-goals (M1.5)
+
+- Real resume/jobs/application workflows
+- Encrypted cookie storage (interface only)
+- Distributed tracing, metrics, secrets manager
+- Event sourcing / outbox (envelope only; BullMQ remains transport)

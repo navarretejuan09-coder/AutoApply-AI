@@ -12,8 +12,9 @@
   },
   "dependencies": {
     "@autoapply/auth": "workspace:*",
-    "@autoapply/database": "workspace:*",
-    "@autoapply/types": "workspace:*",
+    "@autoapply/config": "workspace:*",
+    "@autoapply/contracts": "workspace:*",
+    "@autoapply/user": "workspace:*",
     "@autoapply/ui": "workspace:*",
     "@tanstack/react-query": "^5.62.8",
     "next": "^15.1.2",

@@ -45,17 +45,32 @@ export const ollamaEnvSchema = z.object({
   OLLAMA_HOST: z.string().url("OLLAMA_HOST must be a valid URL").optional(),
 });
 
+export const browserEnvSchema = z.object({
+  BROWSER_PORT: z.coerce.number().int().positive().default(3002),
+});
+
+export const nodeEnvSchema = z.object({
+  NODE_ENV: z
+    .enum(["development", "test", "production"])
+    .default("development"),
+});
+
 export const baseEnvSchema = databaseEnvSchema
   .merge(redisEnvSchema)
   .merge(authEnvSchema)
   .merge(apiEnvSchema)
-  .merge(ollamaEnvSchema);
+  .merge(ollamaEnvSchema)
+  .merge(browserEnvSchema)
+  .merge(nodeEnvSchema);
 
 export type DatabaseEnv = z.infer<typeof databaseEnvSchema>;
 export type RedisEnv = z.infer<typeof redisEnvSchema>;
 export type AuthEnv = z.infer<typeof authEnvSchema>;
 export type ApiEnv = z.infer<typeof apiEnvSchema>;
 export type WebEnv = z.infer<typeof webEnvSchema>;
+export type BrowserEnv = z.infer<typeof browserEnvSchema>;
+export type NodeEnv = z.infer<typeof nodeEnvSchema>;
+export type OllamaEnv = z.infer<typeof ollamaEnvSchema>;
 export type BaseEnv = z.infer<typeof baseEnvSchema>;
 
 export function parseEnv<T extends z.ZodType>(

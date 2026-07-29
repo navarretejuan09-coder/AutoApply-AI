@@ -18,6 +18,10 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test"
   },
+  "dependencies": {
+    "@autoapply/contracts": "workspace:*",
+    "@autoapply/logger": "workspace:*"
+  },
   "devDependencies": {
     "@autoapply/config": "workspace:*",
     "typescript": "^5.7.2"

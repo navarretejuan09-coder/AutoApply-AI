@@ -5,5 +5,11 @@
     "rootDir": "src",
     "composite": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [
+    { "path": "../llm" },
+    { "path": "../embeddings" },
+    { "path": "../agents" },
+    { "path": "../prompts" }
+  ]
 }

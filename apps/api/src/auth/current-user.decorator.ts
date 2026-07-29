@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from "@nestjs/common";
-import type { SessionPayload } from "@autoapply/types";
+import type { SessionPayload } from "@autoapply/contracts";
 
 import type { AuthenticatedRequest } from "./jwt-auth.guard.js";
 

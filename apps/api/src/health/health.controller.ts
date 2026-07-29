@@ -1,6 +1,6 @@
 import { Controller, Get } from "@nestjs/common";
 
-import type { HealthCheckResponse } from "@autoapply/types";
+import type { HealthCheckResponse } from "@autoapply/contracts";
 
 @Controller("health")
 export class HealthController {

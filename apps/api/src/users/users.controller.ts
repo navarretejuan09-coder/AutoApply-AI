@@ -1,5 +1,5 @@
 import { Controller, Get, Post, UseGuards } from "@nestjs/common";
-import type { AuthUserDto, SessionPayload } from "@autoapply/types";
+import type { AuthUserDto, SessionPayload } from "@autoapply/contracts";
 
 import { CurrentUser } from "../auth/current-user.decorator.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";

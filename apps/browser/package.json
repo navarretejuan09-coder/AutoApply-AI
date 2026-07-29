@@ -14,8 +14,12 @@
   },
   "dependencies": {
     "@autoapply/config": "workspace:*",
-    "@autoapply/shared": "workspace:*",
-    "@autoapply/types": "workspace:*",
+    "@autoapply/contracts": "workspace:*",
+    "@autoapply/logger": "workspace:*",
+    "@autoapply/plugin-greenhouse": "workspace:*",
+    "@autoapply/plugin-lever": "workspace:*",
+    "@autoapply/plugin-linkedin": "workspace:*",
+    "@autoapply/plugin-workday": "workspace:*",
     "dotenv": "^16.4.7"
   },
   "devDependencies": {

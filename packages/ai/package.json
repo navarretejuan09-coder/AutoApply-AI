@@ -18,6 +18,12 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test"
   },
+  "dependencies": {
+    "@autoapply/llm": "workspace:*",
+    "@autoapply/embeddings": "workspace:*",
+    "@autoapply/agents": "workspace:*",
+    "@autoapply/prompts": "workspace:*"
+  },
   "devDependencies": {
     "@autoapply/config": "workspace:*",
     "typescript": "^5.7.2"

@@ -1,6 +1,6 @@
 # AutoApply AI
 
-Monorepo for AutoApply AI — AI-powered career platform (Milestone 1 foundation).
+Monorepo for AutoApply AI — AI-powered career platform (M1.5 platform scaffold).
 
 ## Prerequisites
 
@@ -36,7 +36,7 @@ pnpm dev
 |---------|-----|-------------|
 | Web | http://localhost:3000 | Next.js dashboard + Auth.js |
 | API | http://localhost:3001/api | NestJS REST gateway |
-| Browser | http://localhost:3002/health | Playwright service stub |
+| Browser | http://localhost:3002/health | Plugin runtime stub (`/plugins` lists loaded providers) |
 | Postgres | localhost:5432 | Database |
 | Redis | localhost:6379 | BullMQ |
 | Ollama | http://localhost:11434 | Local LLM (unused in M1) |
@@ -55,17 +55,30 @@ apps/
   web/       Next.js + Auth.js frontend
   api/       NestJS REST API
   worker/    BullMQ job consumer
-  browser/   Playwright health stub
+  browser/   Plugin runtime skeleton
 packages/
+  sdk/       Internal API facade
+  contracts/ DTOs, plugin interfaces, queue payloads
+  events/    DomainEvent envelope
+  commands/  Command bus
+  logger/    Structured JSON logging
+  config/    ConfigService + shared tooling
+  domains/
+    user/    User domain + repository
+    resume/  stub
+    jobs/    stub
+    applications/ stub
+    analytics/ stub
+    notifications/ stub
+  plugins/
+    linkedin/ greenhouse/ lever/ workday/  (stubs)
+  llm/ embeddings/ agents/ prompts/ ai/  (AI split, stubs)
+  automation/  orchestration interfaces
   database/  Prisma schema and client
   auth/      Password hashing and JWT helpers
-  types/     Shared TypeScript types
-  shared/    Logger, errors, Zod helpers
-  config/    Shared TS, ESLint, Prettier configs
+  types/     Deprecated shim → contracts
+  shared/    Errors, Zod helpers
   ui/        shadcn/ui components
-  ai/        AI agents (stub)
-  automation/ Job automation (stub)
-  prompts/   Prompt templates (stub)
 ```
 
 ## Scripts
@@ -90,8 +103,8 @@ See [`.env.example`](.env.example). Required:
 - `NEXT_PUBLIC_API_URL` — API base URL for the web app
 - `NEXTAUTH_URL` — Web app URL for Auth.js
 
-## Milestone 1
+## Milestone 1.5
 
-Foundation complete: monorepo, Docker Compose, Prisma User model, Auth.js login/register, NestJS JWT-protected API, BullMQ health ping stub, browser health endpoint, CI.
+Platform scaffold: domain packages, contracts, events, correlation IDs, ConfigService, structured logger, command bus, internal SDK, plugin runtime skeleton. Auth + health ping remain the live vertical slice.
 
-See [docs/architecture.md](docs/architecture.md) for system design and M1 boundaries.
+See [docs/architecture.md](docs/architecture.md) for system design, dependency rules, and milestone mapping.

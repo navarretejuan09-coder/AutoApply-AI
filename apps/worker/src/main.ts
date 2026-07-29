@@ -1,39 +1,37 @@
 import "./load-env.js";
 
-import { parseEnv, redisEnvSchema } from "@autoapply/config";
-import { createLogger } from "@autoapply/shared";
-import { Worker } from "bullmq";
-import { Redis } from "ioredis";
-
 import {
   HEALTH_PING_JOB_NAME,
   HEALTH_QUEUE_NAME,
   type HealthPingJobData,
-} from "./queue.constants.js";
+} from "@autoapply/contracts";
+import { config } from "@autoapply/config";
+import { createLogger } from "@autoapply/logger";
+import { Worker } from "bullmq";
+import { Redis } from "ioredis";
 
-const logger = createLogger("worker");
+const logger = createLogger("worker", { service: "worker" });
 
-parseEnv(redisEnvSchema);
+config.validateAll();
 
-const redisUrl = process.env.REDIS_URL;
-
-if (!redisUrl) {
-  throw new Error("REDIS_URL is required");
-}
-
-const connection = new Redis(redisUrl, {
+const connection = new Redis(config.redis.url, {
   maxRetriesPerRequest: null,
 });
 
 const worker = new Worker<HealthPingJobData>(
   HEALTH_QUEUE_NAME,
   async (job) => {
+    const jobLogger = logger.child({
+      correlationId: job.data.correlationId,
+      causationId: job.data.causationId,
+    });
+
     if (job.name !== HEALTH_PING_JOB_NAME) {
-      logger.warn("Received unknown job", { name: job.name, id: job.id });
+      jobLogger.warn("Received unknown job", { name: job.name, id: job.id });
       return;
     }
 
-    logger.info("Processed health ping job", {
+    jobLogger.info("Processed health ping job", {
       jobId: job.id,
       source: job.data.source,
       timestamp: job.data.timestamp,
@@ -45,6 +43,7 @@ const worker = new Worker<HealthPingJobData>(
 worker.on("failed", (job, error) => {
   logger.error("Job failed", {
     jobId: job?.id,
+    correlationId: job?.data.correlationId,
     error: error.message,
   });
 });

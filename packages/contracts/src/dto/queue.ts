@@ -4,4 +4,6 @@ export const HEALTH_PING_JOB_NAME = "health.ping" as const;
 export interface HealthPingJobData {
   source: string;
   timestamp: string;
+  correlationId: string;
+  causationId: string;
 }

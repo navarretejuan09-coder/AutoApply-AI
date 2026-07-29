@@ -41,15 +41,18 @@ importers:
       '@autoapply/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@autoapply/database':
+      '@autoapply/contracts':
         specifier: workspace:*
-        version: link:../../packages/database
-      '@autoapply/shared':
+        version: link:../../packages/contracts
+      '@autoapply/events':
         specifier: workspace:*
-        version: link:../../packages/shared
-      '@autoapply/types':
+        version: link:../../packages/events
+      '@autoapply/logger':
         specifier: workspace:*
-        version: link:../../packages/types
+        version: link:../../packages/logger
+      '@autoapply/user':
+        specifier: workspace:*
+        version: link:../../packages/domains/user
       '@nestjs/common':
         specifier: ^10.4.15
         version: 10.4.22(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -96,12 +99,24 @@ importers:
       '@autoapply/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@autoapply/shared':
+      '@autoapply/contracts':
         specifier: workspace:*
-        version: link:../../packages/shared
-      '@autoapply/types':
+        version: link:../../packages/contracts
+      '@autoapply/logger':
         specifier: workspace:*
-        version: link:../../packages/types
+        version: link:../../packages/logger
+      '@autoapply/plugin-greenhouse':
+        specifier: workspace:*
+        version: link:../../packages/plugins/greenhouse
+      '@autoapply/plugin-lever':
+        specifier: workspace:*
+        version: link:../../packages/plugins/lever
+      '@autoapply/plugin-linkedin':
+        specifier: workspace:*
+        version: link:../../packages/plugins/linkedin
+      '@autoapply/plugin-workday':
+        specifier: workspace:*
+        version: link:../../packages/plugins/workday
       dotenv:
         specifier: ^16.4.7
         version: 16.6.1
@@ -124,15 +139,18 @@ importers:
       '@autoapply/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@autoapply/database':
+      '@autoapply/config':
         specifier: workspace:*
-        version: link:../../packages/database
-      '@autoapply/types':
+        version: link:../../packages/config
+      '@autoapply/contracts':
         specifier: workspace:*
-        version: link:../../packages/types
+        version: link:../../packages/contracts
       '@autoapply/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@autoapply/user':
+        specifier: workspace:*
+        version: link:../../packages/domains/user
       '@tanstack/react-query':
         specifier: ^5.62.8
         version: 5.101.4(react@19.2.8)
@@ -158,9 +176,6 @@ importers:
         specifier: ^3.24.1
         version: 3.25.76
     devDependencies:
-      '@autoapply/config':
-        specifier: workspace:*
-        version: link:../../packages/config
       '@types/node':
         specifier: ^22.10.2
         version: 22.20.1
@@ -188,9 +203,12 @@ importers:
       '@autoapply/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@autoapply/shared':
+      '@autoapply/contracts':
         specifier: workspace:*
-        version: link:../../packages/shared
+        version: link:../../packages/contracts
+      '@autoapply/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
       bullmq:
         specifier: ^5.34.5
         version: 5.81.2
@@ -214,7 +232,33 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
 
+  packages/agents:
+    dependencies:
+      '@autoapply/logger':
+        specifier: workspace:*
+        version: link:../logger
+    devDependencies:
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
   packages/ai:
+    dependencies:
+      '@autoapply/agents':
+        specifier: workspace:*
+        version: link:../agents
+      '@autoapply/embeddings':
+        specifier: workspace:*
+        version: link:../embeddings
+      '@autoapply/llm':
+        specifier: workspace:*
+        version: link:../llm
+      '@autoapply/prompts':
+        specifier: workspace:*
+        version: link:../prompts
     devDependencies:
       '@autoapply/config':
         specifier: workspace:*
@@ -252,6 +296,22 @@ importers:
         version: 5.9.3
 
   packages/automation:
+    dependencies:
+      '@autoapply/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@autoapply/logger':
+        specifier: workspace:*
+        version: link:../logger
+    devDependencies:
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/commands:
     devDependencies:
       '@autoapply/config':
         specifier: workspace:*
@@ -285,11 +345,23 @@ importers:
         specifier: ^8.18.2
         version: 8.65.0(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
 
+  packages/contracts:
+    devDependencies:
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
   packages/database:
     dependencies:
       '@autoapply/auth':
         specifier: workspace:*
         version: link:../auth
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../config
       '@prisma/adapter-pg':
         specifier: ^7.0.0
         version: 7.9.1
@@ -300,9 +372,6 @@ importers:
         specifier: ^8.13.1
         version: 8.22.0
     devDependencies:
-      '@autoapply/config':
-        specifier: workspace:*
-        version: link:../config
       '@types/pg':
         specifier: ^8.11.10
         version: 8.20.0
@@ -322,7 +391,134 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
 
-  packages/prompts:
+  packages/domains/analytics:
+    dependencies:
+      '@autoapply/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@autoapply/events':
+        specifier: workspace:*
+        version: link:../../events
+      '@autoapply/logger':
+        specifier: workspace:*
+        version: link:../../logger
+    devDependencies:
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../../config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/domains/applications:
+    dependencies:
+      '@autoapply/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@autoapply/events':
+        specifier: workspace:*
+        version: link:../../events
+      '@autoapply/logger':
+        specifier: workspace:*
+        version: link:../../logger
+    devDependencies:
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../../config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/domains/jobs:
+    dependencies:
+      '@autoapply/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@autoapply/events':
+        specifier: workspace:*
+        version: link:../../events
+      '@autoapply/logger':
+        specifier: workspace:*
+        version: link:../../logger
+    devDependencies:
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../../config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/domains/notifications:
+    dependencies:
+      '@autoapply/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@autoapply/events':
+        specifier: workspace:*
+        version: link:../../events
+      '@autoapply/logger':
+        specifier: workspace:*
+        version: link:../../logger
+    devDependencies:
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../../config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/domains/resume:
+    dependencies:
+      '@autoapply/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@autoapply/events':
+        specifier: workspace:*
+        version: link:../../events
+      '@autoapply/logger':
+        specifier: workspace:*
+        version: link:../../logger
+    devDependencies:
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../../config
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.20.1
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/domains/user:
+    dependencies:
+      '@autoapply/auth':
+        specifier: workspace:*
+        version: link:../../auth
+      '@autoapply/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@autoapply/database':
+        specifier: workspace:*
+        version: link:../../database
+      '@autoapply/logger':
+        specifier: workspace:*
+        version: link:../../logger
+    devDependencies:
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../../config
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.20.1
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/embeddings:
+    dependencies:
+      '@autoapply/logger':
+        specifier: workspace:*
+        version: link:../logger
     devDependencies:
       '@autoapply/config':
         specifier: workspace:*
@@ -331,8 +527,172 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
 
+  packages/events:
+    dependencies:
+      '@autoapply/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+    devDependencies:
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.20.1
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/llm:
+    dependencies:
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../config
+      '@autoapply/logger':
+        specifier: workspace:*
+        version: link:../logger
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.20.1
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/logger:
+    devDependencies:
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.20.1
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/plugins/greenhouse:
+    dependencies:
+      '@autoapply/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@autoapply/logger':
+        specifier: workspace:*
+        version: link:../../logger
+    devDependencies:
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../../config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/plugins/lever:
+    dependencies:
+      '@autoapply/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@autoapply/logger':
+        specifier: workspace:*
+        version: link:../../logger
+    devDependencies:
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../../config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/plugins/linkedin:
+    dependencies:
+      '@autoapply/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@autoapply/logger':
+        specifier: workspace:*
+        version: link:../../logger
+    devDependencies:
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../../config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/plugins/workday:
+    dependencies:
+      '@autoapply/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@autoapply/logger':
+        specifier: workspace:*
+        version: link:../../logger
+    devDependencies:
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../../config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/prompts:
+    dependencies:
+      '@autoapply/logger':
+        specifier: workspace:*
+        version: link:../logger
+    devDependencies:
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/sdk:
+    dependencies:
+      '@autoapply/ai':
+        specifier: workspace:*
+        version: link:../ai
+      '@autoapply/analytics':
+        specifier: workspace:*
+        version: link:../domains/analytics
+      '@autoapply/applications':
+        specifier: workspace:*
+        version: link:../domains/applications
+      '@autoapply/automation':
+        specifier: workspace:*
+        version: link:../automation
+      '@autoapply/commands':
+        specifier: workspace:*
+        version: link:../commands
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../config
+      '@autoapply/events':
+        specifier: workspace:*
+        version: link:../events
+      '@autoapply/jobs':
+        specifier: workspace:*
+        version: link:../domains/jobs
+      '@autoapply/notifications':
+        specifier: workspace:*
+        version: link:../domains/notifications
+      '@autoapply/resume':
+        specifier: workspace:*
+        version: link:../domains/resume
+      '@autoapply/user':
+        specifier: workspace:*
+        version: link:../domains/user
+    devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
   packages/shared:
     dependencies:
+      '@autoapply/logger':
+        specifier: workspace:*
+        version: link:../logger
       zod:
         specifier: ^3.24.1
         version: 3.25.76
@@ -348,6 +708,10 @@ importers:
         version: 5.9.3
 
   packages/types:
+    dependencies:
+      '@autoapply/contracts':
+        specifier: workspace:*
+        version: link:../contracts
     devDependencies:
       '@autoapply/config':
         specifier: workspace:*

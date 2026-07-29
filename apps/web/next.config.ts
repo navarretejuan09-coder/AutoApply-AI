@@ -11,8 +11,13 @@ const rootDir = path.resolve(
 config({ path: path.join(rootDir, ".env") });
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@autoapply/ui", "@autoapply/auth", "@autoapply/types"],
-  serverExternalPackages: ["@autoapply/database", "@prisma/client", "pg"],
+  transpilePackages: [
+    "@autoapply/ui",
+    "@autoapply/auth",
+    "@autoapply/config",
+    "@autoapply/contracts",
+    "@autoapply/user",
+  ],
 };
 
 export default nextConfig;

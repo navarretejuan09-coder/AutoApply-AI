@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "@autoapply/config": "workspace:*",
-    "@autoapply/shared": "workspace:*",
+    "@autoapply/contracts": "workspace:*",
+    "@autoapply/logger": "workspace:*",
     "bullmq": "^5.34.5",
     "dotenv": "^16.4.7",
     "ioredis": "^5.4.2"

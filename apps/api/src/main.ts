@@ -3,18 +3,15 @@ import "./load-env.js";
 import "reflect-metadata";
 
 import { NestFactory } from "@nestjs/core";
-import { parseEnv, apiEnvSchema, authEnvSchema, databaseEnvSchema, redisEnvSchema } from "@autoapply/config";
-import { createLogger } from "@autoapply/shared";
+import { config } from "@autoapply/config";
+import { createLogger } from "@autoapply/logger";
 
 import { AppModule } from "./app.module.js";
 
-const logger = createLogger("api");
+const logger = createLogger("api", { service: "api" });
 
 async function bootstrap(): Promise<void> {
-  parseEnv(databaseEnvSchema);
-  parseEnv(redisEnvSchema);
-  parseEnv(authEnvSchema);
-  const apiEnv = parseEnv(apiEnvSchema);
+  config.validateAll();
 
   const app = await NestFactory.create(AppModule, {
     logger: ["error", "warn", "log"],
@@ -23,12 +20,13 @@ async function bootstrap(): Promise<void> {
   app.setGlobalPrefix("api");
 
   app.enableCors({
-    origin: apiEnv.WEB_URL,
+    origin: config.api.webUrl,
     credentials: true,
+    exposedHeaders: ["x-correlation-id"],
   });
 
-  await app.listen(apiEnv.API_PORT);
-  logger.info("API listening", { port: apiEnv.API_PORT });
+  await app.listen(config.api.port);
+  logger.info("API listening", { port: config.api.port });
 }
 
 bootstrap().catch((error: unknown) => {

@@ -2,11 +2,14 @@ import "./load-env.js";
 
 import { createServer } from "node:http";
 
-import { createLogger } from "@autoapply/shared";
-import type { HealthCheckResponse } from "@autoapply/types";
+import { config } from "@autoapply/config";
+import { createLogger } from "@autoapply/logger";
+import type { HealthCheckResponse } from "@autoapply/contracts";
 
-const logger = createLogger("browser");
-const port = Number(process.env.BROWSER_PORT ?? 3002);
+import { pluginManager } from "./runtime/index.js";
+
+const logger = createLogger("browser", { service: "browser" });
+const port = config.browser.port;
 
 const server = createServer((request, response) => {
   if (request.url === "/health") {
@@ -21,10 +24,16 @@ const server = createServer((request, response) => {
     return;
   }
 
+  if (request.url === "/plugins") {
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ plugins: pluginManager.list() }));
+    return;
+  }
+
   response.writeHead(404, { "Content-Type": "application/json" });
   response.end(JSON.stringify({ error: "Not found" }));
 });
 
 server.listen(port, () => {
-  logger.info("Browser service listening", { port });
+  logger.info("Browser service listening", { port, plugins: pluginManager.list() });
 });

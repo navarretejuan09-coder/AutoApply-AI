@@ -5,7 +5,8 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { verifyJwt } from "@autoapply/auth";
-import type { SessionPayload } from "@autoapply/types";
+import { config } from "@autoapply/config";
+import type { SessionPayload } from "@autoapply/contracts";
 import type { Request } from "express";
 
 export interface AuthenticatedRequest extends Request {
@@ -23,14 +24,9 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     const token = authorization.slice("Bearer ".length).trim();
-    const secret = process.env.AUTH_SECRET;
-
-    if (!secret) {
-      throw new UnauthorizedException("AUTH_SECRET is not configured");
-    }
 
     try {
-      request.user = await verifyJwt(token, secret);
+      request.user = await verifyJwt(token, config.auth.secret);
       return true;
     } catch {
       throw new UnauthorizedException("Invalid or expired token");

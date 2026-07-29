@@ -1,6 +1,7 @@
-import { config } from "dotenv";
+import { config as loadDotenv } from "dotenv";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { config } from "@autoapply/config";
 import { hashPassword } from "@autoapply/auth";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
@@ -10,10 +11,10 @@ const rootDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../..",
 );
-config({ path: path.join(rootDir, ".env") });
+loadDotenv({ path: path.join(rootDir, ".env") });
 
 const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: config.database.url,
 });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });

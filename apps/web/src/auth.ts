@@ -1,4 +1,6 @@
-import { signJwt, verifyPassword } from "@autoapply/auth";
+import { config } from "@autoapply/config";
+import { signJwt } from "@autoapply/auth";
+import { verifyUserCredentials } from "@autoapply/user";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
@@ -10,7 +12,7 @@ const credentialsSchema = z.object({
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
-  secret: process.env.AUTH_SECRET,
+  secret: config.auth.secret,
   session: {
     strategy: "jwt",
   },
@@ -31,19 +33,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        const { prisma } = await import("@autoapply/database");
-
-        const user = await prisma.user.findUnique({
-          where: { email: parsed.data.email },
-        });
+        const user = await verifyUserCredentials(
+          parsed.data.email,
+          parsed.data.password,
+        );
 
         if (!user) {
-          return null;
-        }
-
-        const valid = await verifyPassword(parsed.data.password, user.passwordHash);
-
-        if (!valid) {
           return null;
         }
 
@@ -58,12 +53,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     jwt: async ({ token, user }) => {
       if (user) {
-        const secret = process.env.AUTH_SECRET;
-
-        if (!secret) {
-          throw new Error("AUTH_SECRET is not configured");
-        }
-
         token.sub = user.id;
         token.email = user.email;
         token.name = user.name;
@@ -73,7 +62,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             email: user.email ?? "",
             name: user.name,
           },
-          secret,
+          config.auth.secret,
         );
       }
 
