@@ -7,6 +7,13 @@ datasource db {
   provider = "postgresql"
 }
 
+enum ResumeStatus {
+  pending
+  processing
+  parsed
+  failed
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -14,4 +21,23 @@ model User {
   name         String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  resumes      Resume[]
+}
+
+model Resume {
+  id            String       @id @default(cuid())
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName      String
+  mimeType      String
+  content       Bytes
+  status        ResumeStatus @default(pending)
+  extractedText String?
+  skills        String[]     @default([])
+  summary       String?
+  errorMessage  String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([userId, createdAt])
 }

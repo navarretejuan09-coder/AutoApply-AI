@@ -7,6 +7,7 @@ import {
   ollamaEnvSchema,
   parseEnv,
   redisEnvSchema,
+  resumeEnvSchema,
   webEnvSchema,
   type ApiEnv,
   type AuthEnv,
@@ -15,6 +16,7 @@ import {
   type NodeEnv,
   type OllamaEnv,
   type RedisEnv,
+  type ResumeEnv,
   type WebEnv,
 } from "./env.js";
 
@@ -26,6 +28,7 @@ export interface AppConfig {
   web: { nextAuthUrl: string; publicApiUrl: string };
   ai: { host?: string };
   browser: { port: number };
+  resume: { maxBytes: number };
   nodeEnv: "development" | "test" | "production";
 }
 
@@ -37,6 +40,7 @@ class ConfigService {
   private webEnv?: WebEnv;
   private ollamaEnv?: OllamaEnv;
   private browserEnv?: BrowserEnv;
+  private resumeEnv?: ResumeEnv;
   private nodeEnvValue?: NodeEnv;
 
   get database(): AppConfig["database"] {
@@ -81,6 +85,11 @@ class ConfigService {
     return { port: this.browserEnv.BROWSER_PORT };
   }
 
+  get resume(): AppConfig["resume"] {
+    this.resumeEnv ??= parseEnv(resumeEnvSchema);
+    return { maxBytes: this.resumeEnv.RESUME_MAX_BYTES };
+  }
+
   get nodeEnv(): AppConfig["nodeEnv"] {
     this.nodeEnvValue ??= parseEnv(nodeEnvSchema);
     return this.nodeEnvValue.NODE_ENV;
@@ -96,6 +105,7 @@ class ConfigService {
       web: this.web,
       ai: this.ai,
       browser: this.browser,
+      resume: this.resume,
       nodeEnv: this.nodeEnv,
     };
   }

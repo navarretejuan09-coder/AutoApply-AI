@@ -3,6 +3,7 @@ export const EventTypes = {
   UserRegistered: "user.registered",
   JobFound: "job.found",
   ResumeUploaded: "resume.uploaded",
+  ResumeParsed: "resume.parsed",
   ApplicationSubmitted: "application.submitted",
   ApplicationQueued: "application.queued",
 } as const;

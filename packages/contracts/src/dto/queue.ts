@@ -7,3 +7,13 @@ export interface HealthPingJobData {
   correlationId: string;
   causationId: string;
 }
+
+export const RESUME_QUEUE_NAME = "resume" as const;
+export const RESUME_PARSE_JOB_NAME = "resume.parse" as const;
+
+export interface ResumeParseJobData {
+  resumeId: string;
+  userId: string;
+  correlationId: string;
+  causationId: string;
+}

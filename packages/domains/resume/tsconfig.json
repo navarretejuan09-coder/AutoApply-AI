@@ -2,5 +2,12 @@
   "extends": "@autoapply/config/typescript/node.json",
   "compilerOptions": { "outDir": "dist", "rootDir": "src", "composite": true, "types": ["node"] },
   "include": ["src"],
-  "references": [{ "path": "../../contracts" }, { "path": "../../events" }, { "path": "../../logger" }]
+  "exclude": ["test"],
+  "references": [
+    { "path": "../../config" },
+    { "path": "../../contracts" },
+    { "path": "../../database" },
+    { "path": "../../events" },
+    { "path": "../../logger" }
+  ]
 }

@@ -56,11 +56,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.sub = user.id;
         token.email = user.email;
         token.name = user.name;
+      }
+
+      if (token.sub && token.email && typeof token.accessToken !== "string") {
         token.accessToken = await signJwt(
           {
-            sub: user.id ?? "",
-            email: user.email ?? "",
-            name: user.name,
+            sub: token.sub,
+            email: token.email,
+            name: typeof token.name === "string" ? token.name : undefined,
           },
           config.auth.secret,
         );

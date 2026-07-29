@@ -1,4 +1,4 @@
-import { Controller, Get, Post, UseGuards } from "@nestjs/common";
+import { Controller, Get, Inject, Post, UseGuards } from "@nestjs/common";
 import type { AuthUserDto, SessionPayload } from "@autoapply/contracts";
 
 import { CurrentUser } from "../auth/current-user.decorator.js";
@@ -9,8 +9,8 @@ import { UsersService } from "./users.service.js";
 @Controller("users")
 export class UsersController {
   constructor(
-    private readonly usersService: UsersService,
-    private readonly queueService: QueueService,
+    @Inject(UsersService) private readonly usersService: UsersService,
+    @Inject(QueueService) private readonly queueService: QueueService,
   ) {}
 
   @Get("me")

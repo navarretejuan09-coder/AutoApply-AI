@@ -65,7 +65,7 @@ packages/
   config/    ConfigService + shared tooling
   domains/
     user/    User domain + repository
-    resume/  stub
+    resume/  Resume upload, parse, skills (M2)
     jobs/    stub
     applications/ stub
     analytics/ stub
@@ -106,5 +106,9 @@ See [`.env.example`](.env.example). Required:
 ## Milestone 1.5
 
 Platform scaffold: domain packages, contracts, events, correlation IDs, ConfigService, structured logger, command bus, internal SDK, plugin runtime skeleton. Auth + health ping remain the live vertical slice.
+
+## Milestone 2
+
+Resume upload (PDF/DOCX stored in Postgres), async parsing via BullMQ worker, deterministic skill extraction, and dashboard UI at `/dashboard/resumes`.
 
 See [docs/architecture.md](docs/architecture.md) for system design, dependency rules, and milestone mapping.

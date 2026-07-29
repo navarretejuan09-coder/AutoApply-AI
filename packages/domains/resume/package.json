@@ -11,16 +11,22 @@
     "dev": "tsc -p tsconfig.json --watch",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "test": "node --test"
+    "test": "tsx --test test/**/*.test.ts"
   },
   "dependencies": {
+    "@autoapply/config": "workspace:*",
     "@autoapply/contracts": "workspace:*",
+    "@autoapply/database": "workspace:*",
     "@autoapply/events": "workspace:*",
-    "@autoapply/logger": "workspace:*"
+    "@autoapply/logger": "workspace:*",
+    "mammoth": "^1.9.0",
+    "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
     "@autoapply/config": "workspace:*",
     "@types/node": "^22.10.2",
+    "@types/pdf-parse": "^1.1.4",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }
 }

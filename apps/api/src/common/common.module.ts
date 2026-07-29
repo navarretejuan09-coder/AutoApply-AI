@@ -10,7 +10,9 @@ import { RequestContextService } from "./request-context.service.js";
     RequestContextService,
     {
       provide: APP_INTERCEPTOR,
-      useClass: CorrelationIdInterceptor,
+      useFactory: (requestContext: RequestContextService) =>
+        new CorrelationIdInterceptor(requestContext),
+      inject: [RequestContextService],
     },
   ],
   exports: [RequestContextService],

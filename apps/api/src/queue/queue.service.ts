@@ -1,8 +1,11 @@
-import { Injectable, OnModuleDestroy } from "@nestjs/common";
+import { Inject, Injectable, OnModuleDestroy } from "@nestjs/common";
 import {
   HEALTH_PING_JOB_NAME,
   HEALTH_QUEUE_NAME,
+  RESUME_PARSE_JOB_NAME,
+  RESUME_QUEUE_NAME,
   type HealthPingJobData,
+  type ResumeParseJobData,
 } from "@autoapply/contracts";
 import { config } from "@autoapply/config";
 import { createLogger } from "@autoapply/logger";
@@ -16,13 +19,20 @@ export class QueueService implements OnModuleDestroy {
   private readonly logger = createLogger("api.queue", { service: "api" });
   private readonly connection: Redis;
   private readonly healthQueue: Queue<HealthPingJobData>;
+  private readonly resumeQueue: Queue<ResumeParseJobData>;
 
-  constructor(private readonly requestContext: RequestContextService) {
+  constructor(
+    @Inject(RequestContextService) private readonly requestContext: RequestContextService,
+  ) {
     this.connection = new Redis(config.redis.url, {
       maxRetriesPerRequest: null,
     });
 
     this.healthQueue = new Queue<HealthPingJobData>(HEALTH_QUEUE_NAME, {
+      connection: this.connection,
+    });
+
+    this.resumeQueue = new Queue<ResumeParseJobData>(RESUME_QUEUE_NAME, {
       connection: this.connection,
     });
   }
@@ -48,8 +58,31 @@ export class QueueService implements OnModuleDestroy {
     return job;
   }
 
+  async enqueueResumeParse(resumeId: string, userId: string) {
+    const correlationId =
+      this.requestContext.getCorrelationId() ?? crypto.randomUUID();
+
+    const job = await this.resumeQueue.add(RESUME_PARSE_JOB_NAME, {
+      resumeId,
+      userId,
+      correlationId,
+      causationId: correlationId,
+    });
+
+    this.logger.info("Enqueued resume parse job", {
+      jobId: job.id,
+      resumeId,
+      userId,
+      correlationId,
+      causationId: job.id,
+    });
+
+    return job;
+  }
+
   async onModuleDestroy(): Promise<void> {
     await this.healthQueue.close();
+    await this.resumeQueue.close();
     await this.connection.quit();
   }
 }

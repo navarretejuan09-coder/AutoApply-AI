@@ -10,6 +10,7 @@ export {
   parseBaseEnv,
   parseEnv,
   redisEnvSchema,
+  resumeEnvSchema,
   webEnvSchema,
   type ApiEnv,
   type AuthEnv,
@@ -19,5 +20,6 @@ export {
   type NodeEnv,
   type OllamaEnv,
   type RedisEnv,
+  type ResumeEnv,
   type WebEnv,
 } from "./env.js";

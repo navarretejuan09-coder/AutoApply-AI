@@ -49,6 +49,14 @@ export const browserEnvSchema = z.object({
   BROWSER_PORT: z.coerce.number().int().positive().default(3002),
 });
 
+export const resumeEnvSchema = z.object({
+  RESUME_MAX_BYTES: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(5_242_880),
+});
+
 export const nodeEnvSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
@@ -61,6 +69,7 @@ export const baseEnvSchema = databaseEnvSchema
   .merge(apiEnvSchema)
   .merge(ollamaEnvSchema)
   .merge(browserEnvSchema)
+  .merge(resumeEnvSchema)
   .merge(nodeEnvSchema);
 
 export type DatabaseEnv = z.infer<typeof databaseEnvSchema>;
@@ -69,6 +78,7 @@ export type AuthEnv = z.infer<typeof authEnvSchema>;
 export type ApiEnv = z.infer<typeof apiEnvSchema>;
 export type WebEnv = z.infer<typeof webEnvSchema>;
 export type BrowserEnv = z.infer<typeof browserEnvSchema>;
+export type ResumeEnv = z.infer<typeof resumeEnvSchema>;
 export type NodeEnv = z.infer<typeof nodeEnvSchema>;
 export type OllamaEnv = z.infer<typeof ollamaEnvSchema>;
 export type BaseEnv = z.infer<typeof baseEnvSchema>;

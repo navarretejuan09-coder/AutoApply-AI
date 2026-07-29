@@ -65,8 +65,8 @@ packages/
   commands/        CommandBus + stub commands
   sdk/             Internal API facade
   domains/
-    user/          UserRepository + createUser, verifyUserCredentials
-    resume/        stub
+    user/            UserRepository + createUser, verifyUserCredentials
+    resume/          ResumeRepository + uploadResume, parseResume, list/get
     jobs/          stub
     applications/  stub
     analytics/     stub
@@ -91,7 +91,7 @@ packages/
 
 | Milestone | Fills in |
 |-----------|----------|
-| M2 | `@autoapply/resume` — upload, parsing, skills |
+| M2 | `@autoapply/resume` — upload (Postgres bytes), async BullMQ parse, deterministic PDF/DOCX skills extraction, dashboard UI |
 | M3 | `@autoapply/llm`, `embeddings`, `agents`, `prompts` — Ollama integration |
 | M4 | `@autoapply/plugin-linkedin`, browser cookie persistence, Playwright execution |
 | M5 | `@autoapply/analytics`, `@autoapply/notifications` |

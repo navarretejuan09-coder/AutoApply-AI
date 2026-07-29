@@ -12,6 +12,13 @@ export interface ResumeUploadedPayload {
   fileName: string;
 }
 
+export interface ResumeParsedPayload {
+  resumeId: string;
+  userId: string;
+  skills: string[];
+  summary: string | null;
+}
+
 export interface ApplicationSubmittedPayload {
   applicationId: string;
   jobId: string;

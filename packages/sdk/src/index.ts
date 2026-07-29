@@ -50,6 +50,9 @@ export const sdk = {
     get browser() {
       return configService.browser;
     },
+    get resume() {
+      return configService.resume;
+    },
     get nodeEnv() {
       return configService.nodeEnv;
     },
