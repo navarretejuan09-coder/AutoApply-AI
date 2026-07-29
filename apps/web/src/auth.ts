@@ -33,10 +33,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        const user = await verifyUserCredentials(
-          parsed.data.email,
-          parsed.data.password,
-        );
+        const user = await verifyUserCredentials(parsed.data.email, parsed.data.password);
 
         if (!user) {
           return null;
@@ -79,8 +76,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: token.email,
           name: typeof token.name === "string" ? token.name : null,
         };
-        session.accessToken =
-          typeof token.accessToken === "string" ? token.accessToken : undefined;
+        session.accessToken = typeof token.accessToken === "string" ? token.accessToken : undefined;
       }
 
       return session;

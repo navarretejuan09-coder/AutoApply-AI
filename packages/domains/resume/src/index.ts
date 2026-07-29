@@ -47,9 +47,7 @@ function validateUploadInput(input: UploadResumeInput): void {
   }
 
   if (input.content.length > config.resume.maxBytes) {
-    throw new Error(
-      `Resume file exceeds maximum size of ${config.resume.maxBytes} bytes`,
-    );
+    throw new Error(`Resume file exceeds maximum size of ${config.resume.maxBytes} bytes`);
   }
 }
 

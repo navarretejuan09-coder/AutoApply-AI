@@ -7,10 +7,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 import { PrismaClient } from "../src/generated/prisma/client.js";
 
-const rootDir = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "../..",
-);
+const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 loadDotenv({ path: path.join(rootDir, ".env") });
 
 const pool = new pg.Pool({

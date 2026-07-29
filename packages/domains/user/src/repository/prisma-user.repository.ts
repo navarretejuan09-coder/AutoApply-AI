@@ -1,11 +1,7 @@
 import { prisma } from "@autoapply/database";
 import type { AuthUserDto } from "@autoapply/contracts";
 
-import type {
-  CreateUserInput,
-  UserRecord,
-  UserRepository,
-} from "./user.repository.js";
+import type { CreateUserInput, UserRecord, UserRepository } from "./user.repository.js";
 
 export class PrismaUserRepository implements UserRepository {
   async findById(id: string): Promise<AuthUserDto | null> {

@@ -35,9 +35,7 @@ export async function fetchCurrentUser(accessToken: string): Promise<AuthUserDto
   return response.json() as Promise<AuthUserDto>;
 }
 
-export async function enqueueHealthPing(
-  accessToken: string,
-): Promise<EnqueueHealthPingResponse> {
+export async function enqueueHealthPing(accessToken: string): Promise<EnqueueHealthPingResponse> {
   const response = await fetch(`${getApiBaseUrl()}/api/users/queue/ping`, {
     method: "POST",
     headers: buildHeaders(accessToken),
@@ -63,10 +61,7 @@ export async function fetchResumes(accessToken: string): Promise<ListResumesResp
   return response.json() as Promise<ListResumesResponse>;
 }
 
-export async function fetchResume(
-  accessToken: string,
-  resumeId: string,
-): Promise<ResumeDto> {
+export async function fetchResume(accessToken: string, resumeId: string): Promise<ResumeDto> {
   const response = await fetch(`${getApiBaseUrl()}/api/resumes/${resumeId}`, {
     headers: buildHeaders(accessToken),
     cache: "no-store",
@@ -79,10 +74,7 @@ export async function fetchResume(
   return response.json() as Promise<ResumeDto>;
 }
 
-export async function uploadResume(
-  accessToken: string,
-  file: File,
-): Promise<UploadResumeResponse> {
+export async function uploadResume(accessToken: string, file: File): Promise<UploadResumeResponse> {
   const formData = new FormData();
   formData.append("file", file);
 

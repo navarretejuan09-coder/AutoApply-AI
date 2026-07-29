@@ -23,12 +23,12 @@ Runnable local stack: Docker Compose + `pnpm dev` brings up Postgres, Redis, Oll
 
 ## Apps
 
-| App | M1 deliverable |
-|-----|----------------|
-| web | Login, register, dashboard shell, API client |
-| api | Health, `GET /users/me`, queue ping producer |
-| worker | BullMQ `health.ping` consumer |
-| browser | HTTP `/health` stub |
+| App     | M1 deliverable                               |
+| ------- | -------------------------------------------- |
+| web     | Login, register, dashboard shell, API client |
+| api     | Health, `GET /users/me`, queue ping producer |
+| worker  | BullMQ `health.ping` consumer                |
+| browser | HTTP `/health` stub                          |
 
 ## Packages
 

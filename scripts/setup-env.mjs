@@ -8,12 +8,7 @@ const envPath = path.join(rootDir, ".env");
 const examplePath = path.join(rootDir, ".env.example");
 const webEnvPath = path.join(rootDir, "apps/web/.env.local");
 
-const WEB_ENV_KEYS = [
-  "AUTH_SECRET",
-  "NEXTAUTH_URL",
-  "NEXT_PUBLIC_API_URL",
-  "DATABASE_URL",
-];
+const WEB_ENV_KEYS = ["AUTH_SECRET", "NEXTAUTH_URL", "NEXT_PUBLIC_API_URL", "DATABASE_URL"];
 
 function parseEnv(content) {
   const values = new Map();

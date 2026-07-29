@@ -6,11 +6,7 @@ import * as analytics from "@autoapply/analytics";
 import * as notifications from "@autoapply/notifications";
 import * as automation from "@autoapply/automation";
 import * as ai from "@autoapply/ai";
-import {
-  commandBus,
-  type ApplyJobCommand,
-  type RegisterUserCommand,
-} from "@autoapply/commands";
+import { commandBus, type ApplyJobCommand, type RegisterUserCommand } from "@autoapply/commands";
 import { createDomainEvent, EventTypes } from "@autoapply/events";
 import { config as configService } from "@autoapply/config";
 

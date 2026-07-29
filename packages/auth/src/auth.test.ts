@@ -30,12 +30,7 @@ test("jwt sign and verify round-trip", async () => {
 });
 
 test("verifyJwt rejects tokens signed with a different secret", async () => {
-  const token = await signJwt(
-    { sub: "user-1", email: "demo@autoapply.ai" },
-    TEST_SECRET,
-  );
+  const token = await signJwt({ sub: "user-1", email: "demo@autoapply.ai" }, TEST_SECRET);
 
-  await assert.rejects(
-    () => verifyJwt(token, "another-secret-that-is-at-least-32-chars"),
-  );
+  await assert.rejects(() => verifyJwt(token, "another-secret-that-is-at-least-32-chars"));
 });

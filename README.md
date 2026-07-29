@@ -32,21 +32,21 @@ pnpm dev
 
 ## Services
 
-| Service | URL | Description |
-|---------|-----|-------------|
-| Web | http://localhost:3000 | Next.js dashboard + Auth.js |
-| API | http://localhost:3001/api | NestJS REST gateway |
-| Browser | http://localhost:3002/health | Plugin runtime stub (`/plugins` lists loaded providers) |
-| Postgres | localhost:5432 | Database |
-| Redis | localhost:6379 | BullMQ |
-| Ollama | http://localhost:11434 | Local LLM (unused in M1) |
+| Service  | URL                          | Description                                             |
+| -------- | ---------------------------- | ------------------------------------------------------- |
+| Web      | http://localhost:3000        | Next.js dashboard + Auth.js                             |
+| API      | http://localhost:3001/api    | NestJS REST gateway                                     |
+| Browser  | http://localhost:3002/health | Plugin runtime stub (`/plugins` lists loaded providers) |
+| Postgres | localhost:5432               | Database                                                |
+| Redis    | localhost:6379               | BullMQ                                                  |
+| Ollama   | http://localhost:11434       | Local LLM (unused in M1)                                |
 
 ## Demo user (after seed)
 
-| Field | Value |
-|-------|-------|
-| Email | `demo@autoapply.ai` |
-| Password | `demo123456` |
+| Field    | Value               |
+| -------- | ------------------- |
+| Email    | `demo@autoapply.ai` |
+| Password | `demo123456`        |
 
 ## Workspace layout
 
@@ -83,15 +83,15 @@ packages/
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `pnpm install` | Install all workspace dependencies |
-| `pnpm dev` | Start all apps in development mode |
-| `pnpm build` | Build all packages and apps |
-| `pnpm lint` | Lint the workspace |
-| `pnpm typecheck` | Type-check the workspace |
-| `pnpm test` | Run tests |
-| `pnpm format` | Format with Prettier |
+| Command          | Description                        |
+| ---------------- | ---------------------------------- |
+| `pnpm install`   | Install all workspace dependencies |
+| `pnpm dev`       | Start all apps in development mode |
+| `pnpm build`     | Build all packages and apps        |
+| `pnpm lint`      | Lint the workspace                 |
+| `pnpm typecheck` | Type-check the workspace           |
+| `pnpm test`      | Run tests                          |
+| `pnpm format`    | Format with Prettier               |
 
 ## Environment
 

@@ -38,8 +38,7 @@ export class QueueService implements OnModuleDestroy {
   }
 
   async enqueueHealthPing(source: string) {
-    const correlationId =
-      this.requestContext.getCorrelationId() ?? crypto.randomUUID();
+    const correlationId = this.requestContext.getCorrelationId() ?? crypto.randomUUID();
 
     const job = await this.healthQueue.add(HEALTH_PING_JOB_NAME, {
       source,
@@ -59,8 +58,7 @@ export class QueueService implements OnModuleDestroy {
   }
 
   async enqueueResumeParse(resumeId: string, userId: string) {
-    const correlationId =
-      this.requestContext.getCorrelationId() ?? crypto.randomUUID();
+    const correlationId = this.requestContext.getCorrelationId() ?? crypto.randomUUID();
 
     const job = await this.resumeQueue.add(RESUME_PARSE_JOB_NAME, {
       resumeId,

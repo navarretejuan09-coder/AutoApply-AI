@@ -20,19 +20,21 @@
 
 ## File map
 
-| File | Responsibility |
-|------|----------------|
-| `.github/workflows/ci.yml` | CI entrypoint: install, env seed, format/lint/typecheck/test/build |
-| Many source/docs/json files (Prettier touch) | Satisfy `pnpm format:check` only — no logic changes |
+| File                                         | Responsibility                                                     |
+| -------------------------------------------- | ------------------------------------------------------------------ |
+| `.github/workflows/ci.yml`                   | CI entrypoint: install, env seed, format/lint/typecheck/test/build |
+| Many source/docs/json files (Prettier touch) | Satisfy `pnpm format:check` only — no logic changes                |
 
 ---
 
 ### Task 1: Make Prettier format check pass
 
 **Files:**
+
 - Modify: any files reported by `pnpm format:check` (Prettier rewrite only)
 
 **Interfaces:**
+
 - Consumes: root script `format` / `format:check` in `package.json`
 - Produces: clean `pnpm format:check` exit code 0 so Task 2 can enable it in CI
 
@@ -72,9 +74,11 @@ Do not stage secrets (`.env`, credentials). Do not stage unrelated untracked noi
 ### Task 2: Extend CI workflow with env seed, format check, and tests
 
 **Files:**
+
 - Modify: `.github/workflows/ci.yml`
 
 **Interfaces:**
+
 - Consumes: root scripts `setup:env`, `format:check`, `lint`, `typecheck`, `test`, `build`
 - Produces: GitHub Actions job that fails if any of those scripts fail
 
@@ -157,9 +161,11 @@ EOF
 ### Task 3: Verify CI steps locally (same order as the workflow)
 
 **Files:**
+
 - None (verification only). Fix only if a command fails for a CI-blocking reason related to this work.
 
 **Interfaces:**
+
 - Consumes: same commands as `.github/workflows/ci.yml` after install
 - Produces: evidence that format → lint → typecheck → test → build succeed locally
 
@@ -201,14 +207,14 @@ If no fixes were needed, skip this commit.
 
 ## Spec coverage checklist
 
-| Spec requirement | Task |
-|------------------|------|
-| Triggers push/PR to main | Task 2 |
-| Single ubuntu job, pnpm 9, Node 20 | Task 2 |
-| `setup:env` after install | Task 2 |
-| `format:check` | Task 1 (green) + Task 2 (wire) |
-| `lint` / `typecheck` / `test` / `build` | Task 2 + Task 3 |
-| No e2e/Docker/coverage/matrix | Honored (no tasks) |
+| Spec requirement                        | Task                           |
+| --------------------------------------- | ------------------------------ |
+| Triggers push/PR to main                | Task 2                         |
+| Single ubuntu job, pnpm 9, Node 20      | Task 2                         |
+| `setup:env` after install               | Task 2                         |
+| `format:check`                          | Task 1 (green) + Task 2 (wire) |
+| `lint` / `typecheck` / `test` / `build` | Task 2 + Task 3                |
+| No e2e/Docker/coverage/matrix           | Honored (no tasks)             |
 
 ## Self-review notes
 

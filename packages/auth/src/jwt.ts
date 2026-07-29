@@ -28,10 +28,7 @@ export async function signJwt(
     .sign(encodeSecret(secret));
 }
 
-export async function verifyJwt(
-  token: string,
-  secret: string,
-): Promise<SessionPayload> {
+export async function verifyJwt(token: string, secret: string): Promise<SessionPayload> {
   const { payload } = await jwtVerify(token, encodeSecret(secret), {
     algorithms: [ALGORITHM],
   });

@@ -30,8 +30,8 @@ export function DashboardOverview() {
           Welcome back{apiUser?.name ? `, ${apiUser.name}` : ""}
         </h1>
         <p className="max-w-2xl text-muted-foreground">
-          Milestone 1 foundation is live. Resume management, job search, and
-          application automation arrive in upcoming milestones.
+          Milestone 1 foundation is live. Resume management, job search, and application automation
+          arrive in upcoming milestones.
         </p>
       </section>
 

@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-} from "@nestjs/common";
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from "@nestjs/common";
 import { CORRELATION_ID_HEADER } from "@autoapply/contracts";
 import { randomUUID } from "node:crypto";
 import type { Observable } from "rxjs";
@@ -23,9 +18,7 @@ export class CorrelationIdInterceptor implements NestInterceptor {
 
     const headerValue = request.headers[CORRELATION_ID_HEADER];
     const correlationId =
-      typeof headerValue === "string" && headerValue.length > 0
-        ? headerValue
-        : randomUUID();
+      typeof headerValue === "string" && headerValue.length > 0 ? headerValue : randomUUID();
 
     this.requestContext.setCorrelationId(correlationId);
     response.setHeader(CORRELATION_ID_HEADER, correlationId);

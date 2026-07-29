@@ -1,8 +1,4 @@
-export {
-  BrowserRuntime,
-  browserRuntime,
-  type BrowserRuntimeOptions,
-} from "./runtime.js";
+export { BrowserRuntime, browserRuntime, type BrowserRuntimeOptions } from "./runtime.js";
 export {
   InMemoryBrowserSessionStore,
   PostgresBrowserSessionStore,

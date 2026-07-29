@@ -1,9 +1,4 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from "@nestjs/common";
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { verifyJwt } from "@autoapply/auth";
 import { config } from "@autoapply/config";
 import type { SessionPayload } from "@autoapply/contracts";

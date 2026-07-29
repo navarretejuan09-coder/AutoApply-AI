@@ -1,9 +1,4 @@
-export type {
-  AuthUserDto,
-  LoginDto,
-  RegisterDto,
-  SessionPayload,
-} from "./dto/auth.js";
+export type { AuthUserDto, LoginDto, RegisterDto, SessionPayload } from "./dto/auth.js";
 export type { HealthCheckResponse, HealthStatus } from "./dto/health.js";
 export {
   HEALTH_PING_JOB_NAME,
@@ -30,10 +25,7 @@ export type {
   JobPosting,
   SearchCriteria,
 } from "./plugins/job-board.js";
-export type {
-  EnqueueHealthPingResponse,
-  GetCurrentUserResponse,
-} from "./api/users.js";
+export type { EnqueueHealthPingResponse, GetCurrentUserResponse } from "./api/users.js";
 export type {
   ListResumesResponse,
   ResumeDto,

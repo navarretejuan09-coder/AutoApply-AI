@@ -57,14 +57,10 @@ function createLoggerWithContext(namespace: string, context: LoggerContext): Log
     info: (message, meta) => write("info", namespace, context, message, meta),
     warn: (message, meta) => write("warn", namespace, context, message, meta),
     error: (message, meta) => write("error", namespace, context, message, meta),
-    child: (childContext) =>
-      createLoggerWithContext(namespace, { ...context, ...childContext }),
+    child: (childContext) => createLoggerWithContext(namespace, { ...context, ...childContext }),
   };
 }
 
-export function createLogger(
-  namespace: string,
-  context: LoggerContext = {},
-): Logger {
+export function createLogger(namespace: string, context: LoggerContext = {}): Logger {
   return createLoggerWithContext(namespace, context);
 }

@@ -70,10 +70,7 @@ function ResumeCard({ resume }: { resume: ResumeDto }) {
       {resume.skills.length > 0 ? (
         <ul className="mt-4 flex flex-wrap gap-2">
           {resume.skills.map((skill) => (
-            <li
-              key={skill}
-              className="rounded-md border border-border/60 px-2 py-1 text-xs"
-            >
+            <li key={skill} className="rounded-md border border-border/60 px-2 py-1 text-xs">
               {skill}
             </li>
           ))}
@@ -117,17 +114,15 @@ export function ResumesPanel() {
 
   const resumes = resumesQuery.data?.resumes ?? [];
   const canUpload =
-    Boolean(selectedFile) &&
-    !uploadMutation.isPending &&
-    sessionStatus !== "loading";
+    Boolean(selectedFile) && !uploadMutation.isPending && sessionStatus !== "loading";
 
   return (
     <div className="space-y-8">
       <section className="space-y-2">
         <h1 className="font-display text-2xl font-semibold">Resumes</h1>
         <p className="text-muted-foreground">
-          Upload a PDF or DOCX resume. Parsing runs in the background and extracted
-          skills appear when ready.
+          Upload a PDF or DOCX resume. Parsing runs in the background and extracted skills appear
+          when ready.
         </p>
       </section>
 

@@ -6,16 +6,11 @@ import {
   type SupportedResumeMimeType,
 } from "../repository/resume.repository.js";
 
-export function isSupportedResumeMimeType(
-  mimeType: string,
-): mimeType is SupportedResumeMimeType {
+export function isSupportedResumeMimeType(mimeType: string): mimeType is SupportedResumeMimeType {
   return (SUPPORTED_RESUME_MIME_TYPES as readonly string[]).includes(mimeType);
 }
 
-export async function extractTextFromResume(
-  content: Buffer,
-  mimeType: string,
-): Promise<string> {
+export async function extractTextFromResume(content: Buffer, mimeType: string): Promise<string> {
   if (!isSupportedResumeMimeType(mimeType)) {
     throw new Error(`Unsupported resume MIME type: ${mimeType}`);
   }

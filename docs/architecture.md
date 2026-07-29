@@ -6,20 +6,20 @@ AutoApply AI is an event-driven, modular monorepo for AI-assisted job discovery 
 
 ## Layers
 
-| Layer | Location | Responsibility |
-|-------|----------|------------------|
-| Presentation | `apps/web` | Next.js dashboard, Auth.js login/register |
-| API | `apps/api` | NestJS REST gateway, JWT auth, queue producer |
-| Worker | `apps/worker` | BullMQ consumer |
-| Browser | `apps/browser` | Plugin runtime skeleton, stateless session lifecycle |
-| SDK | `packages/sdk` | Internal facade for apps (`sdk.user`, `sdk.jobs`, …) |
-| Domains | `packages/domains/*` | Business logic + repositories (Prisma only here) |
-| Contracts | `packages/contracts` | DTOs, API shapes, plugin interfaces, queue payloads |
-| Events | `packages/events` | Immutable `DomainEvent<T>` envelope |
-| Commands | `packages/commands` | Command bus + handler interfaces |
-| Plugins | `packages/plugins/*` | Job board providers (LinkedIn, Greenhouse, …) |
-| AI | `packages/llm`, `embeddings`, `agents`, `prompts` | Split AI concerns (stubs) |
-| Platform | `config`, `logger`, `auth`, `database`, `ui` | Cross-cutting infrastructure |
+| Layer        | Location                                          | Responsibility                                       |
+| ------------ | ------------------------------------------------- | ---------------------------------------------------- |
+| Presentation | `apps/web`                                        | Next.js dashboard, Auth.js login/register            |
+| API          | `apps/api`                                        | NestJS REST gateway, JWT auth, queue producer        |
+| Worker       | `apps/worker`                                     | BullMQ consumer                                      |
+| Browser      | `apps/browser`                                    | Plugin runtime skeleton, stateless session lifecycle |
+| SDK          | `packages/sdk`                                    | Internal facade for apps (`sdk.user`, `sdk.jobs`, …) |
+| Domains      | `packages/domains/*`                              | Business logic + repositories (Prisma only here)     |
+| Contracts    | `packages/contracts`                              | DTOs, API shapes, plugin interfaces, queue payloads  |
+| Events       | `packages/events`                                 | Immutable `DomainEvent<T>` envelope                  |
+| Commands     | `packages/commands`                               | Command bus + handler interfaces                     |
+| Plugins      | `packages/plugins/*`                              | Job board providers (LinkedIn, Greenhouse, …)        |
+| AI           | `packages/llm`, `embeddings`, `agents`, `prompts` | Split AI concerns (stubs)                            |
+| Platform     | `config`, `logger`, `auth`, `database`, `ui`      | Cross-cutting infrastructure                         |
 
 ## Dependency rules
 
@@ -89,13 +89,13 @@ packages/
 
 ## Milestone mapping
 
-| Milestone | Fills in |
-|-----------|----------|
-| M2 | `@autoapply/resume` — upload (Postgres bytes), async BullMQ parse, deterministic PDF/DOCX skills extraction, dashboard UI |
-| M3 | `@autoapply/llm`, `embeddings`, `agents`, `prompts` — Ollama integration |
-| M4 | `@autoapply/plugin-linkedin`, browser cookie persistence, Playwright execution |
-| M5 | `@autoapply/analytics`, `@autoapply/notifications` |
-| M6 | Additional job board plugins |
+| Milestone | Fills in                                                                                                                  |
+| --------- | ------------------------------------------------------------------------------------------------------------------------- |
+| M2        | `@autoapply/resume` — upload (Postgres bytes), async BullMQ parse, deterministic PDF/DOCX skills extraction, dashboard UI |
+| M3        | `@autoapply/llm`, `embeddings`, `agents`, `prompts` — Ollama integration                                                  |
+| M4        | `@autoapply/plugin-linkedin`, browser cookie persistence, Playwright execution                                            |
+| M5        | `@autoapply/analytics`, `@autoapply/notifications`                                                                        |
+| M6        | Additional job board plugins                                                                                              |
 
 ## Explicit non-goals (M1.5)
 

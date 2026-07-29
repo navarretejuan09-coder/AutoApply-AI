@@ -14,10 +14,7 @@ export async function POST(request: Request): Promise<Response> {
     const parsed = registerSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Invalid registration payload" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid registration payload" }, { status: 400 });
     }
 
     const user = await createUser(parsed.data);

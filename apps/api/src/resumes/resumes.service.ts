@@ -1,24 +1,13 @@
 import { Inject, Injectable } from "@nestjs/common";
-import {
-  getResumeForUser,
-  listResumesByUser,
-  uploadResume,
-} from "@autoapply/resume";
+import { getResumeForUser, listResumesByUser, uploadResume } from "@autoapply/resume";
 
 import { QueueService } from "../queue/queue.service.js";
 
 @Injectable()
 export class ResumesService {
-  constructor(
-    @Inject(QueueService) private readonly queueService: QueueService,
-  ) {}
+  constructor(@Inject(QueueService) private readonly queueService: QueueService) {}
 
-  async uploadAndEnqueue(
-    userId: string,
-    fileName: string,
-    mimeType: string,
-    content: Buffer,
-  ) {
+  async uploadAndEnqueue(userId: string, fileName: string, mimeType: string, content: Buffer) {
     const resume = await uploadResume({ userId, fileName, mimeType, content });
     const job = await this.queueService.enqueueResumeParse(resume.id, userId);
 

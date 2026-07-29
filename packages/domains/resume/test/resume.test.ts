@@ -68,10 +68,7 @@ class InMemoryResumeRepository implements ResumeRepository {
     return updated;
   }
 
-  async updateParseResult(
-    id: string,
-    input: UpdateResumeParseResultInput,
-  ): Promise<ResumeRecord> {
+  async updateParseResult(id: string, input: UpdateResumeParseResultInput): Promise<ResumeRecord> {
     const record = this.records.get(id);
     if (!record) {
       throw new Error(`Resume not found: ${id}`);

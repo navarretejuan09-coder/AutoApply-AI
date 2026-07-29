@@ -22,9 +22,7 @@ import { ResumesService } from "./resumes.service.js";
 @Controller("resumes")
 @UseGuards(JwtAuthGuard)
 export class ResumesController {
-  constructor(
-    @Inject(ResumesService) private readonly resumesService: ResumesService,
-  ) {}
+  constructor(@Inject(ResumesService) private readonly resumesService: ResumesService) {}
 
   @Post()
   @UseInterceptors(
@@ -61,10 +59,7 @@ export class ResumesController {
   }
 
   @Get(":id")
-  async getResume(
-    @CurrentUser() user: SessionPayload,
-    @Param("id") resumeId: string,
-  ) {
+  async getResume(@CurrentUser() user: SessionPayload, @Param("id") resumeId: string) {
     const resume = await this.resumesService.getForUser(resumeId, user.sub);
 
     if (!resume) {

@@ -83,10 +83,7 @@ export class PrismaResumeRepository implements ResumeRepository {
     return mapResume(resume);
   }
 
-  async updateParseResult(
-    id: string,
-    input: UpdateResumeParseResultInput,
-  ): Promise<ResumeRecord> {
+  async updateParseResult(id: string, input: UpdateResumeParseResultInput): Promise<ResumeRecord> {
     const resume = await prisma.resume.update({
       where: { id },
       data: {

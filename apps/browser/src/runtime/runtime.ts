@@ -2,10 +2,7 @@ import type { ApplicationPlan, JobBoardPlugin } from "@autoapply/contracts";
 import { createLogger } from "@autoapply/logger";
 
 import { pluginManager } from "./plugin-manager.js";
-import {
-  InMemoryBrowserSessionStore,
-  type BrowserSessionStore,
-} from "./session-store.js";
+import { InMemoryBrowserSessionStore, type BrowserSessionStore } from "./session-store.js";
 
 const logger = createLogger("browser.runtime", { service: "browser" });
 
@@ -56,10 +53,7 @@ export class BrowserRuntime {
     });
   }
 
-  private async runStatelessSession(
-    plugin: JobBoardPlugin,
-    plan: ApplicationPlan,
-  ): Promise<void> {
+  private async runStatelessSession(plugin: JobBoardPlugin, plan: ApplicationPlan): Promise<void> {
     await plugin.authenticate();
     await plugin.executeApplication(plan);
   }

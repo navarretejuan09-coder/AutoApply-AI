@@ -22,9 +22,7 @@ export interface CreateDomainEventOptions<T> {
   version?: number;
 }
 
-export function createDomainEvent<T>(
-  options: CreateDomainEventOptions<T>,
-): DomainEvent<T> {
+export function createDomainEvent<T>(options: CreateDomainEventOptions<T>): DomainEvent<T> {
   return Object.freeze({
     id: randomUUID(),
     type: options.type,

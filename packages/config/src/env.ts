@@ -25,9 +25,7 @@ export const redisEnvSchema = z.object({
 });
 
 export const authEnvSchema = z.object({
-  AUTH_SECRET: z
-    .string()
-    .min(32, "AUTH_SECRET must be at least 32 characters"),
+  AUTH_SECRET: z.string().min(32, "AUTH_SECRET must be at least 32 characters"),
 });
 
 export const apiEnvSchema = z.object({
@@ -50,17 +48,11 @@ export const browserEnvSchema = z.object({
 });
 
 export const resumeEnvSchema = z.object({
-  RESUME_MAX_BYTES: z.coerce
-    .number()
-    .int()
-    .positive()
-    .default(5_242_880),
+  RESUME_MAX_BYTES: z.coerce.number().int().positive().default(5_242_880),
 });
 
 export const nodeEnvSchema = z.object({
-  NODE_ENV: z
-    .enum(["development", "test", "production"])
-    .default("development"),
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
 
 export const baseEnvSchema = databaseEnvSchema

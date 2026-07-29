@@ -35,9 +35,7 @@ export class InMemoryBrowserSessionStore implements BrowserSessionStore {
 /** Placeholder for M4 Postgres-backed encrypted cookie storage. */
 export class PostgresBrowserSessionStore implements BrowserSessionStore {
   async load(userId: string, provider: string): Promise<BrowserSessionRecord | null> {
-    throw new Error(
-      `Not implemented: PostgresBrowserSessionStore.load (${userId}, ${provider})`,
-    );
+    throw new Error(`Not implemented: PostgresBrowserSessionStore.load (${userId}, ${provider})`);
   }
 
   async save(record: BrowserSessionRecord): Promise<void> {
@@ -47,8 +45,6 @@ export class PostgresBrowserSessionStore implements BrowserSessionStore {
   }
 
   async clear(userId: string, provider: string): Promise<void> {
-    throw new Error(
-      `Not implemented: PostgresBrowserSessionStore.clear (${userId}, ${provider})`,
-    );
+    throw new Error(`Not implemented: PostgresBrowserSessionStore.clear (${userId}, ${provider})`);
   }
 }
