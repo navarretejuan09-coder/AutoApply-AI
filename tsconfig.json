@@ -1,0 +1,17 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./apps/api" },
+    { "path": "./apps/browser" },
+    { "path": "./apps/web" },
+    { "path": "./apps/worker" },
+    { "path": "./packages/ai" },
+    { "path": "./packages/auth" },
+    { "path": "./packages/automation" },
+    { "path": "./packages/database" },
+    { "path": "./packages/prompts" },
+    { "path": "./packages/shared" },
+    { "path": "./packages/types" },
+    { "path": "./packages/ui" }
+  ]
+}

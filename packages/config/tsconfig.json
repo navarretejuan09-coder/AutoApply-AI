@@ -1,0 +1,9 @@
+{
+  "extends": "./typescript/node.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true
+  },
+  "include": ["eslint/base.js", "prettier/index.js", "eslint.config.mjs"]
+}
