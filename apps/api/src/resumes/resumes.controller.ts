@@ -13,12 +13,10 @@ import {
 import { FileInterceptor } from "@nestjs/platform-express";
 import type { SessionPayload } from "@autoapply/contracts";
 import { config } from "@autoapply/config";
-import { SUPPORTED_RESUME_MIME_TYPES } from "@autoapply/resume";
 import { memoryStorage } from "multer";
 
 import { CurrentUser } from "../auth/current-user.decorator.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
-import { QueueService } from "../queue/queue.service.js";
 import { ResumesService } from "./resumes.service.js";
 
 @Controller("resumes")
@@ -26,7 +24,6 @@ import { ResumesService } from "./resumes.service.js";
 export class ResumesController {
   constructor(
     @Inject(ResumesService) private readonly resumesService: ResumesService,
-    @Inject(QueueService) private readonly queueService: QueueService,
   ) {}
 
   @Post()
@@ -44,27 +41,13 @@ export class ResumesController {
       throw new BadRequestException("Resume file is required");
     }
 
-    if (!(SUPPORTED_RESUME_MIME_TYPES as readonly string[]).includes(file.mimetype)) {
-      throw new BadRequestException(
-        "Unsupported file type. Upload a PDF or DOCX resume.",
-      );
-    }
-
     try {
-      const resume = await this.resumesService.upload(
+      return await this.resumesService.uploadAndEnqueue(
         user.sub,
         file.originalname,
         file.mimetype,
         file.buffer,
       );
-
-      const job = await this.queueService.enqueueResumeParse(resume.id, user.sub);
-
-      return {
-        resume,
-        jobId: job.id,
-        queue: job.queueName,
-      };
     } catch (error) {
       const message = error instanceof Error ? error.message : "Upload failed";
       throw new BadRequestException(message);

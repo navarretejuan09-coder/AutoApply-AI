@@ -63,21 +63,12 @@ const resumeWorker = new Worker<ResumeParseJobData>(
       userId: job.data.userId,
     });
 
-    try {
-      const parsed = await parseResume(job.data.resumeId);
-      jobLogger.info("Resume parse job completed", {
-        jobId: job.id,
-        resumeId: parsed.resumeId,
-        skillCount: parsed.skills.length,
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
-      jobLogger.error("Resume parse job failed", {
-        jobId: job.id,
-        resumeId: job.data.resumeId,
-        error: message,
-      });
-    }
+    const parsed = await parseResume(job.data.resumeId);
+    jobLogger.info("Resume parse job completed", {
+      jobId: job.id,
+      resumeId: parsed.resumeId,
+      skillCount: parsed.skills.length,
+    });
   },
   { connection },
 );

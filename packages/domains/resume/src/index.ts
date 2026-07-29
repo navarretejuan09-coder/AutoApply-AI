@@ -1,5 +1,3 @@
-import { createRequire } from "node:module";
-
 import { config } from "@autoapply/config";
 import type { ResumeDto } from "@autoapply/contracts";
 import { createDomainEvent, EventTypes } from "@autoapply/events";
@@ -8,36 +6,20 @@ import { createLogger } from "@autoapply/logger";
 import { extractTextFromResume } from "./parser/extract-text.js";
 import { extractSkills } from "./parser/extract-skills.js";
 import { summarizeText } from "./parser/summarize.js";
+import { PrismaResumeRepository } from "./repository/prisma-resume.repository.js";
 import {
   SUPPORTED_RESUME_MIME_TYPES,
   type ResumeRepository,
   toResumeDto,
 } from "./repository/resume.repository.js";
 
-const require = createRequire(import.meta.url);
-
 const logger = createLogger("resume.domain");
 
-let repositoryOverride: ResumeRepository | undefined;
-let defaultRepository: ResumeRepository | undefined;
-
-function getRepository(): ResumeRepository {
-  if (repositoryOverride) {
-    return repositoryOverride;
-  }
-
-  defaultRepository ??= new (
-    require("./repository/prisma-resume.repository.js") as {
-      PrismaResumeRepository: new () => ResumeRepository;
-    }
-  ).PrismaResumeRepository();
-
-  return defaultRepository;
-}
+let repository: ResumeRepository = new PrismaResumeRepository();
 
 /** Override repository (testing). */
 export function setResumeRepository(repo: ResumeRepository): void {
-  repositoryOverride = repo;
+  repository = repo;
 }
 
 export interface UploadResumeInput {
@@ -74,7 +56,7 @@ function validateUploadInput(input: UploadResumeInput): void {
 export async function uploadResume(input: UploadResumeInput): Promise<ResumeDto> {
   validateUploadInput(input);
 
-  const record = await getRepository().create({
+  const record = await repository.create({
     userId: input.userId,
     fileName: input.fileName,
     mimeType: input.mimeType,
@@ -107,13 +89,13 @@ export async function uploadResume(input: UploadResumeInput): Promise<ResumeDto>
 }
 
 export async function parseResume(resumeId: string): Promise<ParsedResume> {
-  const record = await getRepository().findById(resumeId);
+  const record = await repository.findById(resumeId);
 
   if (!record) {
     throw new Error(`Resume not found: ${resumeId}`);
   }
 
-  await getRepository().updateStatus(resumeId, "processing");
+  await repository.updateStatus(resumeId, "processing");
 
   try {
     const extractedText = await extractTextFromResume(record.content, record.mimeType);
@@ -125,7 +107,7 @@ export async function parseResume(resumeId: string): Promise<ParsedResume> {
     const skills = extractSkills(extractedText);
     const summary = summarizeText(extractedText);
 
-    const updated = await getRepository().updateParseResult(resumeId, {
+    const updated = await repository.updateParseResult(resumeId, {
       status: "parsed",
       extractedText,
       skills,
@@ -164,7 +146,7 @@ export async function parseResume(resumeId: string): Promise<ParsedResume> {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown parse error";
 
-    await getRepository().updateParseResult(resumeId, {
+    await repository.updateParseResult(resumeId, {
       status: "failed",
       errorMessage: message,
     });
@@ -179,7 +161,7 @@ export async function parseResume(resumeId: string): Promise<ParsedResume> {
 }
 
 export async function listResumesByUser(userId: string): Promise<ResumeDto[]> {
-  const records = await getRepository().listByUserId(userId);
+  const records = await repository.listByUserId(userId);
   return records.map(toResumeDto);
 }
 
@@ -187,7 +169,7 @@ export async function getResumeForUser(
   resumeId: string,
   userId: string,
 ): Promise<ResumeDto | null> {
-  const record = await getRepository().findByIdForUser(resumeId, userId);
+  const record = await repository.findByIdForUser(resumeId, userId);
   return record ? toResumeDto(record) : null;
 }
 
