@@ -1,17 +1,18 @@
-import { randomUUID } from "node:crypto";
-
-import { config } from "@autoapply/config";
 import { CORRELATION_ID_HEADER } from "@autoapply/contracts";
 import type { AuthUserDto, EnqueueHealthPingResponse } from "@autoapply/contracts";
 
 function getApiBaseUrl(): string {
-  return config.web.publicApiUrl;
+  const url = process.env.NEXT_PUBLIC_API_URL;
+  if (!url) {
+    throw new Error("NEXT_PUBLIC_API_URL is not set");
+  }
+  return url;
 }
 
 function buildHeaders(accessToken: string): HeadersInit {
   return {
     Authorization: `Bearer ${accessToken}`,
-    [CORRELATION_ID_HEADER]: randomUUID(),
+    [CORRELATION_ID_HEADER]: crypto.randomUUID(),
   };
 }
 
