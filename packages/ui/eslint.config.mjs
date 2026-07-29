@@ -1,4 +1,14 @@
 import base from "@autoapply/config/eslint/base.js";
+import globals from "globals";
 
 /** @type {import("eslint").Linter.Config[]} */
-export default [...base];
+export default [
+  ...base,
+  {
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
+  },
+];

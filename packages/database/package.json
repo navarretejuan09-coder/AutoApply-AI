@@ -23,15 +23,14 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@autoapply/auth": "workspace:*",
     "@prisma/adapter-pg": "^7.0.0",
     "@prisma/client": "^7.0.0",
     "pg": "^8.13.1"
   },
   "devDependencies": {
     "@autoapply/config": "workspace:*",
-    "@types/bcrypt": "^5.0.2",
     "@types/pg": "^8.11.10",
-    "bcrypt": "^5.1.1",
     "dotenv": "^16.4.7",
     "dotenv-cli": "^8.0.0",
     "prisma": "^7.0.0",

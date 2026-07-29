@@ -1,7 +1,7 @@
 import { config } from "dotenv";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import bcrypt from "bcrypt";
+import { hashPassword } from "@autoapply/auth";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 import { PrismaClient } from "../src/generated/prisma/client.js";
@@ -26,7 +26,7 @@ export const DEMO_USER = {
 } as const;
 
 async function main() {
-  const passwordHash = await bcrypt.hash(DEMO_USER.password, 10);
+  const passwordHash = await hashPassword(DEMO_USER.password);
 
   const user = await prisma.user.upsert({
     where: { email: DEMO_USER.email },

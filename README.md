@@ -1,12 +1,12 @@
 # AutoApply AI
 
-Monorepo for AutoApply AI — automated job application platform (Milestone 1 foundation).
+Monorepo for AutoApply AI — AI-powered career platform (Milestone 1 foundation).
 
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) 20+
 - [pnpm](https://pnpm.io/) 9
-- [Docker](https://www.docker.com/) (for Postgres, Redis, Ollama)
+- [Docker](https://www.docker.com/) (Postgres, Redis, Ollama)
 
 ## Quick start
 
@@ -14,19 +14,39 @@ Monorepo for AutoApply AI — automated job application platform (Milestone 1 fo
 # Install dependencies
 pnpm install
 
-# Copy environment template
+# Copy environment template and generate AUTH_SECRET
 cp .env.example .env
+pnpm setup:env
 
-# Start infrastructure (Task 2+)
+# Start infrastructure
 docker compose up -d
 
 # Run database migrations and seed
 pnpm --filter @autoapply/database db:migrate
 pnpm --filter @autoapply/database db:seed
 
-# Start all apps in dev mode (Task 5+)
+# Start all apps (web, api, worker, browser)
 pnpm dev
+# Or: ./scripts/dev.sh
 ```
+
+## Services
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| Web | http://localhost:3000 | Next.js dashboard + Auth.js |
+| API | http://localhost:3001/api | NestJS REST gateway |
+| Browser | http://localhost:3002/health | Playwright service stub |
+| Postgres | localhost:5432 | Database |
+| Redis | localhost:6379 | BullMQ |
+| Ollama | http://localhost:11434 | Local LLM (unused in M1) |
+
+## Demo user (after seed)
+
+| Field | Value |
+|-------|-------|
+| Email | `demo@autoapply.ai` |
+| Password | `demo123456` |
 
 ## Workspace layout
 
@@ -60,24 +80,18 @@ packages/
 | `pnpm test` | Run tests |
 | `pnpm format` | Format with Prettier |
 
-## Demo user (after seed)
-
-After running `pnpm --filter @autoapply/database db:seed`:
-
-| Field | Value |
-|-------|-------|
-| Email | `demo@autoapply.ai` |
-| Password | `demo123456` |
-
 ## Environment
 
-See [`.env.example`](.env.example) for required variables:
+See [`.env.example`](.env.example). Required:
 
 - `DATABASE_URL` — PostgreSQL connection string
 - `REDIS_URL` — Redis connection string
-- `OLLAMA_HOST` — Local Ollama API URL
-- `AUTH_SECRET` — Shared secret for Auth.js and API JWT verification
+- `AUTH_SECRET` — Shared secret for Auth.js and API JWT (min 32 chars)
+- `NEXT_PUBLIC_API_URL` — API base URL for the web app
+- `NEXTAUTH_URL` — Web app URL for Auth.js
 
-## Milestone 1 status
+## Milestone 1
 
-This scaffold provides the Turborepo/pnpm workspace root. Subsequent tasks add Docker Compose, Prisma, shared packages, NestJS API, Next.js web app, worker/browser stubs, and CI.
+Foundation complete: monorepo, Docker Compose, Prisma User model, Auth.js login/register, NestJS JWT-protected API, BullMQ health ping stub, browser health endpoint, CI.
+
+See [docs/architecture.md](docs/architecture.md) for system design and M1 boundaries.

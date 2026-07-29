@@ -1,9 +1,10 @@
 {
-  "extends": "./typescript/node.json",
+  "extends": "@autoapply/config/typescript/node.json",
   "compilerOptions": {
-    "noEmit": true,
-    "allowJs": true,
-    "checkJs": true
+    "outDir": "dist",
+    "rootDir": "src",
+    "composite": true,
+    "types": ["node"]
   },
-  "include": ["eslint/base.js", "prettier/index.js", "eslint.config.mjs"]
+  "include": ["src"]
 }

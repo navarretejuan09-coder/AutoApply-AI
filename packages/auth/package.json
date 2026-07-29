@@ -16,10 +16,18 @@
     "dev": "tsc -p tsconfig.json --watch",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "test": "node --test"
+    "test": "node --import tsx/esm --test src/**/*.test.ts"
+  },
+  "dependencies": {
+    "@autoapply/types": "workspace:*",
+    "bcryptjs": "^2.4.3",
+    "jose": "^5.9.6"
   },
   "devDependencies": {
     "@autoapply/config": "workspace:*",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }
 }

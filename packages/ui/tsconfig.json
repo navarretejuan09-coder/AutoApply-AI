@@ -1,9 +1,11 @@
 {
-  "extends": "@autoapply/config/typescript/node.json",
+  "extends": "@autoapply/config/typescript/base.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "composite": true
+    "composite": true,
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
   "include": ["src"]
 }
