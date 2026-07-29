@@ -20,8 +20,8 @@ cp .env.example .env
 # Start infrastructure (Task 2+)
 docker compose up -d
 
-# Run database migrations and seed (Task 3+)
-pnpm --filter @autoapply/database prisma migrate dev
+# Run database migrations and seed
+pnpm --filter @autoapply/database db:migrate
 pnpm --filter @autoapply/database db:seed
 
 # Start all apps in dev mode (Task 5+)
@@ -59,6 +59,15 @@ packages/
 | `pnpm typecheck` | Type-check the workspace |
 | `pnpm test` | Run tests |
 | `pnpm format` | Format with Prettier |
+
+## Demo user (after seed)
+
+After running `pnpm --filter @autoapply/database db:seed`:
+
+| Field | Value |
+|-------|-------|
+| Email | `demo@autoapply.ai` |
+| Password | `demo123456` |
 
 ## Environment
 

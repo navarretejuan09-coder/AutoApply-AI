@@ -12,14 +12,30 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "prisma generate && tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
     "lint": "eslint src",
-    "typecheck": "tsc --noEmit",
-    "test": "node --test"
+    "typecheck": "prisma generate && tsc --noEmit",
+    "test": "node --test",
+    "db:generate": "prisma generate",
+    "db:migrate": "dotenv -e ../../.env -- prisma migrate dev",
+    "db:seed": "dotenv -e ../../.env -- prisma db seed",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.0.0",
+    "@prisma/client": "^7.0.0",
+    "pg": "^8.13.1"
   },
   "devDependencies": {
     "@autoapply/config": "workspace:*",
+    "@types/bcrypt": "^5.0.2",
+    "@types/pg": "^8.11.10",
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.7",
+    "dotenv-cli": "^8.0.0",
+    "prisma": "^7.0.0",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }
 }
