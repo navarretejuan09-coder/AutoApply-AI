@@ -29,7 +29,7 @@ Local developers can still run `pnpm test` without the coverage gate; CI enforce
 
 ## What counts toward coverage
 
-**Include:** Handwritten TypeScript under `apps/**` and `packages/**` (`.ts` / `.tsx`).
+**Include:** Handwritten TypeScript under `apps/**` and `packages/**` (`.ts` only).
 
 **Exclude:**
 
@@ -38,9 +38,11 @@ Local developers can still run `pnpm test` without the coverage gate; CI enforce
 - `**/.next/**`
 - Prisma generated client: `packages/database/src/generated/**`
 - Test files: `**/*.test.ts`
-- Optional bootstrap/config noise only if it skews the denominator without meaningful product logic (e.g. ESLint config). Prefer minimal excludes.
+- Declaration files: `**/*.d.ts`
+- React/Next UI: `**/*.tsx` (requires a browser/DOM harness; unit gate covers `.ts` modules and web helpers such as `lib/api.ts`)
+- Optional bootstrap/config noise only if it skews the denominator without meaningful product logic (e.g. ESLint / Next / Tailwind config). Prefer minimal excludes.
 
-This is a true monorepo-wide gate over product source, not a phased soft-exclude of untested packages.
+This is a monorepo-wide gate over product TypeScript modules (`all: true` in c8), not a phased soft-exclude of untested packages.
 
 ## Test strategy
 

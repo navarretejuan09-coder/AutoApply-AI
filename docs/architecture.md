@@ -97,6 +97,12 @@ packages/
 | M5        | `@autoapply/analytics`, `@autoapply/notifications`                                                                        |
 | M6        | Additional job board plugins                                                                                              |
 
+## CI and coverage
+
+GitHub Actions (`.github/workflows/ci.yml`) runs format, lint, typecheck, **`pnpm test:coverage`**, and build on PRs and pushes to `main`. Coverage uses root `c8` (see `.c8rc.json`) with an **80%** lines/statements gate over handwritten `apps/**/*.ts` and `packages/**/*.ts` (excluding generated Prisma client, build output, and React/Next `.tsx` UI). Local `pnpm test` still runs without the gate.
+
+To block merges when CI fails, enable a branch protection rule on `main` that requires the workflow’s `build` job as a status check.
+
 ## Explicit non-goals (M1.5)
 
 - Real resume/jobs/application workflows
