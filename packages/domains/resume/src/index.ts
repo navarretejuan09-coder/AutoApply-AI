@@ -1,6 +1,5 @@
 import { config } from "@autoapply/config";
 import type { ResumeDto } from "@autoapply/contracts";
-import { createDomainEvent, EventTypes } from "@autoapply/events";
 import { createLogger } from "@autoapply/logger";
 
 import { extractTextFromResume } from "./parser/extract-text.js";
@@ -27,6 +26,11 @@ export interface UploadResumeInput {
   fileName: string;
   mimeType: string;
   content: Buffer;
+}
+
+export interface ParseResumeInput {
+  resumeId: string;
+  userId: string;
 }
 
 export interface ParsedResume {
@@ -61,23 +65,7 @@ export async function uploadResume(input: UploadResumeInput): Promise<ResumeDto>
     content: input.content,
   });
 
-  const event = createDomainEvent({
-    type: EventTypes.ResumeUploaded,
-    payload: {
-      resumeId: record.id,
-      userId: record.userId,
-      fileName: record.fileName,
-    },
-    metadata: {
-      correlationId: record.id,
-      causationId: record.id,
-      actorId: record.userId,
-    },
-  });
-
   logger.info("Resume uploaded", {
-    eventId: event.id,
-    eventType: event.type,
     resumeId: record.id,
     userId: record.userId,
     fileName: record.fileName,
@@ -86,17 +74,17 @@ export async function uploadResume(input: UploadResumeInput): Promise<ResumeDto>
   return toResumeDto(record);
 }
 
-export async function parseResume(resumeId: string): Promise<ParsedResume> {
-  const record = await repository.findById(resumeId);
+export async function parseResume(input: ParseResumeInput): Promise<ParsedResume> {
+  const blob = await repository.findBlobByIdForUser(input.resumeId, input.userId);
 
-  if (!record) {
-    throw new Error(`Resume not found: ${resumeId}`);
+  if (!blob) {
+    throw new Error(`Resume not found: ${input.resumeId}`);
   }
 
-  await repository.updateStatus(resumeId, "processing");
+  await repository.updateStatus(input.resumeId, "processing");
 
   try {
-    const extractedText = await extractTextFromResume(record.content, record.mimeType);
+    const extractedText = await extractTextFromResume(blob.content, blob.mimeType);
 
     if (!extractedText) {
       throw new Error("No text could be extracted from the resume");
@@ -105,32 +93,14 @@ export async function parseResume(resumeId: string): Promise<ParsedResume> {
     const skills = extractSkills(extractedText);
     const summary = summarizeText(extractedText);
 
-    const updated = await repository.updateParseResult(resumeId, {
+    const updated = await repository.updateParseResult(input.resumeId, {
       status: "parsed",
       extractedText,
       skills,
       summary,
-      errorMessage: null,
-    });
-
-    const event = createDomainEvent({
-      type: EventTypes.ResumeParsed,
-      payload: {
-        resumeId: updated.id,
-        userId: updated.userId,
-        skills: updated.skills,
-        summary: updated.summary,
-      },
-      metadata: {
-        correlationId: updated.id,
-        causationId: updated.id,
-        actorId: updated.userId,
-      },
     });
 
     logger.info("Resume parsed", {
-      eventId: event.id,
-      eventType: event.type,
       resumeId: updated.id,
       userId: updated.userId,
       skillCount: updated.skills.length,
@@ -144,13 +114,14 @@ export async function parseResume(resumeId: string): Promise<ParsedResume> {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown parse error";
 
-    await repository.updateParseResult(resumeId, {
+    await repository.updateParseResult(input.resumeId, {
       status: "failed",
       errorMessage: message,
     });
 
     logger.error("Resume parse failed", {
-      resumeId,
+      resumeId: input.resumeId,
+      userId: input.userId,
       error: message,
     });
 

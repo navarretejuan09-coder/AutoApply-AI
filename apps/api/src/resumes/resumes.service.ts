@@ -11,9 +11,13 @@ export class ResumesService {
     const resume = await uploadResume({ userId, fileName, mimeType, content });
     const job = await this.queueService.enqueueResumeParse(resume.id, userId);
 
+    if (job.id == null) {
+      throw new Error("Failed to enqueue resume parse job");
+    }
+
     return {
       resume,
-      jobId: job.id,
+      jobId: String(job.id),
       queue: job.queueName,
     };
   }

@@ -1,19 +1,33 @@
 import { prisma } from "@autoapply/database";
+import type { ResumeStatus } from "@autoapply/contracts";
 
 import type {
   CreateResumeInput,
-  ResumeRecord,
+  ParseWrite,
+  ResumeBlob,
+  ResumeMetadata,
   ResumeRepository,
-  UpdateResumeParseResultInput,
 } from "./resume.repository.js";
-import type { ResumeStatus } from "@autoapply/contracts";
 
-function mapResume(record: {
+const metadataSelect = {
+  id: true,
+  userId: true,
+  fileName: true,
+  mimeType: true,
+  status: true,
+  extractedText: true,
+  skills: true,
+  summary: true,
+  errorMessage: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
+function mapMetadata(record: {
   id: string;
   userId: string;
   fileName: string;
   mimeType: string;
-  content: Uint8Array;
   status: ResumeStatus;
   extractedText: string | null;
   skills: string[];
@@ -21,13 +35,12 @@ function mapResume(record: {
   errorMessage: string | null;
   createdAt: Date;
   updatedAt: Date;
-}): ResumeRecord {
+}): ResumeMetadata {
   return {
     id: record.id,
     userId: record.userId,
     fileName: record.fileName,
     mimeType: record.mimeType,
-    content: Buffer.from(record.content),
     status: record.status,
     extractedText: record.extractedText,
     skills: record.skills,
@@ -39,7 +52,7 @@ function mapResume(record: {
 }
 
 export class PrismaResumeRepository implements ResumeRepository {
-  async create(input: CreateResumeInput): Promise<ResumeRecord> {
+  async create(input: CreateResumeInput): Promise<ResumeMetadata> {
     const resume = await prisma.resume.create({
       data: {
         userId: input.userId,
@@ -47,54 +60,93 @@ export class PrismaResumeRepository implements ResumeRepository {
         mimeType: input.mimeType,
         content: new Uint8Array(input.content),
       },
+      select: metadataSelect,
     });
 
-    return mapResume(resume);
+    return mapMetadata(resume);
   }
 
-  async findById(id: string): Promise<ResumeRecord | null> {
-    const resume = await prisma.resume.findUnique({ where: { id } });
-    return resume ? mapResume(resume) : null;
-  }
-
-  async findByIdForUser(id: string, userId: string): Promise<ResumeRecord | null> {
+  async findBlobByIdForUser(id: string, userId: string): Promise<ResumeBlob | null> {
     const resume = await prisma.resume.findFirst({
       where: { id, userId },
-    });
-
-    return resume ? mapResume(resume) : null;
-  }
-
-  async listByUserId(userId: string): Promise<ResumeRecord[]> {
-    const resumes = await prisma.resume.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-    });
-
-    return resumes.map(mapResume);
-  }
-
-  async updateStatus(id: string, status: ResumeStatus): Promise<ResumeRecord> {
-    const resume = await prisma.resume.update({
-      where: { id },
-      data: { status },
-    });
-
-    return mapResume(resume);
-  }
-
-  async updateParseResult(id: string, input: UpdateResumeParseResultInput): Promise<ResumeRecord> {
-    const resume = await prisma.resume.update({
-      where: { id },
-      data: {
-        status: input.status,
-        extractedText: input.extractedText,
-        skills: input.skills,
-        summary: input.summary,
-        errorMessage: input.errorMessage,
+      select: {
+        id: true,
+        userId: true,
+        mimeType: true,
+        content: true,
       },
     });
 
-    return mapResume(resume);
+    if (!resume) {
+      return null;
+    }
+
+    return {
+      id: resume.id,
+      userId: resume.userId,
+      mimeType: resume.mimeType,
+      content: Buffer.from(resume.content),
+    };
+  }
+
+  async findByIdForUser(id: string, userId: string): Promise<ResumeMetadata | null> {
+    const resume = await prisma.resume.findFirst({
+      where: { id, userId },
+      select: metadataSelect,
+    });
+
+    return resume ? mapMetadata(resume) : null;
+  }
+
+  async listByUserId(userId: string): Promise<ResumeMetadata[]> {
+    const resumes = await prisma.resume.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      select: metadataSelect,
+    });
+
+    return resumes.map(mapMetadata);
+  }
+
+  async updateStatus(id: string, status: ResumeStatus): Promise<void> {
+    await prisma.resume.update({
+      where: { id },
+      data: { status },
+      select: { id: true },
+    });
+  }
+
+  async updateParseResult(id: string, input: ParseWrite): Promise<ResumeMetadata> {
+    switch (input.status) {
+      case "parsed": {
+        const resume = await prisma.resume.update({
+          where: { id },
+          data: {
+            status: "parsed",
+            extractedText: input.extractedText,
+            skills: input.skills,
+            summary: input.summary,
+            errorMessage: null,
+          },
+          select: metadataSelect,
+        });
+        return mapMetadata(resume);
+      }
+      case "failed": {
+        const resume = await prisma.resume.update({
+          where: { id },
+          data: {
+            status: "failed",
+            errorMessage: input.errorMessage,
+          },
+          select: metadataSelect,
+        });
+        return mapMetadata(resume);
+      }
+      default: {
+        const exhaustive: never = input;
+        throw new Error(`Unhandled parse write: ${JSON.stringify(exhaustive)}`);
+      }
+    }
   }
 }

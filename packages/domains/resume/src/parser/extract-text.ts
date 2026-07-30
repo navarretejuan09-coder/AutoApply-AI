@@ -15,11 +15,18 @@ export async function extractTextFromResume(content: Buffer, mimeType: string): 
     throw new Error(`Unsupported resume MIME type: ${mimeType}`);
   }
 
-  if (mimeType === "application/pdf") {
-    const parsed = await pdfParse(content);
-    return parsed.text.trim();
+  switch (mimeType) {
+    case "application/pdf": {
+      const parsed = await pdfParse(content);
+      return parsed.text.trim();
+    }
+    case "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {
+      const result = await mammoth.extractRawText({ buffer: content });
+      return result.value.trim();
+    }
+    default: {
+      const exhaustive: never = mimeType;
+      throw new Error(`Unsupported resume MIME type: ${exhaustive}`);
+    }
   }
-
-  const result = await mammoth.extractRawText({ buffer: content });
-  return result.value.trim();
 }

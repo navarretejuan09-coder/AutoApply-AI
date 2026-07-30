@@ -1,12 +1,17 @@
 "use client";
 
 import { Button } from "@autoapply/ui";
-import type { ResumeDto, ResumeStatus } from "@autoapply/contracts";
+import { DEFAULT_RESUME_MAX_BYTES, type ResumeDto, type ResumeStatus } from "@autoapply/contracts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useRef, useState } from "react";
 
 import { fetchResumes, uploadResume } from "@/lib/api";
+
+function formatMaxUploadSize(bytes: number): string {
+  const mb = bytes / (1024 * 1024);
+  return Number.isInteger(mb) ? `${mb}MB` : `${mb.toFixed(1)}MB`;
+}
 
 function statusLabel(status: ResumeStatus): string {
   switch (status) {
@@ -129,7 +134,8 @@ export function ResumesPanel() {
       <section className="rounded-lg border border-border/70 bg-background/80 p-5">
         <h2 className="font-medium">Upload resume</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Supported formats: PDF, DOCX. Maximum size: 5MB.
+          Supported formats: PDF, DOCX. Maximum size:{" "}
+          {formatMaxUploadSize(DEFAULT_RESUME_MAX_BYTES)}.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <input
@@ -164,7 +170,7 @@ export function ResumesPanel() {
         ) : null}
         {uploadMutation.isSuccess ? (
           <p className="mt-4 text-sm text-muted-foreground">
-            Upload queued for parsing (job {String(uploadMutation.data.jobId)}).
+            Upload queued for parsing (job {uploadMutation.data.jobId}).
           </p>
         ) : null}
         {uploadMutation.isError ? (

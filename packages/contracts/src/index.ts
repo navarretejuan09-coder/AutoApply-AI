@@ -32,3 +32,4 @@ export type {
   ResumeStatus,
   UploadResumeResponse,
 } from "./api/resumes.js";
+export { DEFAULT_RESUME_MAX_BYTES } from "./api/resumes.js";

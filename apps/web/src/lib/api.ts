@@ -3,7 +3,6 @@ import type {
   AuthUserDto,
   EnqueueHealthPingResponse,
   ListResumesResponse,
-  ResumeDto,
   UploadResumeResponse,
 } from "@autoapply/contracts";
 
@@ -59,19 +58,6 @@ export async function fetchResumes(accessToken: string): Promise<ListResumesResp
   }
 
   return response.json() as Promise<ListResumesResponse>;
-}
-
-export async function fetchResume(accessToken: string, resumeId: string): Promise<ResumeDto> {
-  const response = await fetch(`${getApiBaseUrl()}/api/resumes/${resumeId}`, {
-    headers: buildHeaders(accessToken),
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch resume with status ${response.status}`);
-  }
-
-  return response.json() as Promise<ResumeDto>;
 }
 
 export async function uploadResume(accessToken: string, file: File): Promise<UploadResumeResponse> {

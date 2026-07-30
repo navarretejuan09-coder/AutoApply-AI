@@ -14,12 +14,12 @@ export interface CreateResumeInput {
   content: Buffer;
 }
 
-export interface ResumeRecord {
+/** Metadata returned to API/DTO paths — never includes file bytes. */
+export interface ResumeMetadata {
   id: string;
   userId: string;
   fileName: string;
   mimeType: string;
-  content: Buffer;
   status: ResumeStatus;
   extractedText: string | null;
   skills: string[];
@@ -29,24 +29,36 @@ export interface ResumeRecord {
   updatedAt: Date;
 }
 
-export interface UpdateResumeParseResultInput {
-  status: ResumeStatus;
-  extractedText?: string | null;
-  skills?: string[];
-  summary?: string | null;
-  errorMessage?: string | null;
+/** Blob loaded only for parsing. */
+export interface ResumeBlob {
+  id: string;
+  userId: string;
+  mimeType: string;
+  content: Buffer;
 }
+
+export type ParseWrite =
+  | {
+      status: "parsed";
+      extractedText: string;
+      skills: string[];
+      summary: string;
+    }
+  | {
+      status: "failed";
+      errorMessage: string;
+    };
 
 export interface ResumeRepository {
-  create(input: CreateResumeInput): Promise<ResumeRecord>;
-  findById(id: string): Promise<ResumeRecord | null>;
-  findByIdForUser(id: string, userId: string): Promise<ResumeRecord | null>;
-  listByUserId(userId: string): Promise<ResumeRecord[]>;
-  updateStatus(id: string, status: ResumeStatus): Promise<ResumeRecord>;
-  updateParseResult(id: string, input: UpdateResumeParseResultInput): Promise<ResumeRecord>;
+  create(input: CreateResumeInput): Promise<ResumeMetadata>;
+  findBlobByIdForUser(id: string, userId: string): Promise<ResumeBlob | null>;
+  findByIdForUser(id: string, userId: string): Promise<ResumeMetadata | null>;
+  listByUserId(userId: string): Promise<ResumeMetadata[]>;
+  updateStatus(id: string, status: ResumeStatus): Promise<void>;
+  updateParseResult(id: string, input: ParseWrite): Promise<ResumeMetadata>;
 }
 
-export function toResumeDto(record: ResumeRecord): ResumeDto {
+export function toResumeDto(record: ResumeMetadata): ResumeDto {
   return {
     id: record.id,
     userId: record.userId,

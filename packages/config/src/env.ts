@@ -48,7 +48,11 @@ export const browserEnvSchema = z.object({
 });
 
 export const resumeEnvSchema = z.object({
-  RESUME_MAX_BYTES: z.coerce.number().int().positive().default(5_242_880),
+  RESUME_MAX_BYTES: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(5_242_880), // keep in sync with DEFAULT_RESUME_MAX_BYTES in contracts
 });
 
 export const nodeEnvSchema = z.object({

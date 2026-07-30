@@ -63,7 +63,10 @@ const resumeWorker = new Worker<ResumeParseJobData>(
       userId: job.data.userId,
     });
 
-    const parsed = await parseResume(job.data.resumeId);
+    const parsed = await parseResume({
+      resumeId: job.data.resumeId,
+      userId: job.data.userId,
+    });
     jobLogger.info("Resume parse job completed", {
       jobId: job.id,
       resumeId: parsed.resumeId,

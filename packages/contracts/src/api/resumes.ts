@@ -1,5 +1,8 @@
 export type ResumeStatus = "pending" | "processing" | "parsed" | "failed";
 
+/** Default max upload size (5 MiB). Keep in sync with RESUME_MAX_BYTES env default. */
+export const DEFAULT_RESUME_MAX_BYTES = 5_242_880;
+
 export interface ResumeDto {
   id: string;
   userId: string;
@@ -15,7 +18,7 @@ export interface ResumeDto {
 
 export interface UploadResumeResponse {
   resume: ResumeDto;
-  jobId: string | number | undefined;
+  jobId: string;
   queue: string;
 }
 
