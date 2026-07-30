@@ -1,20 +1,23 @@
 import type { ApplicationPlan, JobBoardPlugin } from "@autoapply/contracts";
 import { createLogger } from "@autoapply/logger";
 
-import { pluginManager } from "./plugin-manager.js";
+import { pluginManager as defaultPluginManager, type PluginManager } from "./plugin-manager.js";
 import { InMemoryBrowserSessionStore, type BrowserSessionStore } from "./session-store.js";
 
 const logger = createLogger("browser.runtime", { service: "browser" });
 
 export interface BrowserRuntimeOptions {
   sessionStore?: BrowserSessionStore;
+  pluginManager?: PluginManager;
 }
 
 export class BrowserRuntime {
   private readonly sessionStore: BrowserSessionStore;
+  private readonly pluginManager: PluginManager;
 
   constructor(options: BrowserRuntimeOptions = {}) {
     this.sessionStore = options.sessionStore ?? new InMemoryBrowserSessionStore();
+    this.pluginManager = options.pluginManager ?? defaultPluginManager;
   }
 
   async executeApplication(input: {
@@ -22,7 +25,7 @@ export class BrowserRuntime {
     pluginName: string;
     plan: ApplicationPlan;
   }): Promise<void> {
-    const plugin = pluginManager.load(input.pluginName);
+    const plugin = this.pluginManager.load(input.pluginName);
 
     logger.info("Launching browser session", {
       userId: input.userId,

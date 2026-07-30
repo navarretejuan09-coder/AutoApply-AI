@@ -9,8 +9,11 @@ import {
   getJobForUser,
   listJobsByUser,
   matchJob,
+  rankJob,
   resetJobsAgentDeps,
   resetResumeMatchLookup,
+  saveJob,
+  searchJobs,
   setJobRepository,
   setJobsAgentDeps,
   setResumeMatchLookup,
@@ -180,5 +183,206 @@ describe("jobs domain", () => {
 
     assert.equal(await archiveJob(job.id, "u1"), true);
     assert.equal((await listJobsByUser("u1")).length, 0);
+  });
+
+  it("createJob validates company and description", async () => {
+    setJobRepository(new InMemoryJobRepository());
+
+    await assert.rejects(
+      () => createJob({ userId: "u1", title: "Role", company: " ", description: "Desc" }),
+      /company is required/,
+    );
+    await assert.rejects(
+      () => createJob({ userId: "u1", title: "Role", company: "Acme", description: " " }),
+      /description is required/,
+    );
+  });
+
+  it("matchJob throws when job not found", async () => {
+    setJobRepository(new InMemoryJobRepository());
+
+    await assert.rejects(
+      () => matchJob({ jobId: "missing", userId: "u1" }),
+      /Job not found/,
+    );
+  });
+
+  it("matchJob handles agent errors gracefully", async () => {
+    setJobRepository(new InMemoryJobRepository());
+    setResumeMatchLookup(async () => ({
+      resumeId: "resume-1",
+      skills: ["TypeScript"],
+      summary: "Engineer",
+      extractedText: "Built APIs",
+    }));
+    setJobsAgentDeps({
+      embed: async () => {
+        throw new Error("LLM unavailable");
+      },
+      cosineSimilarity: () => 0.5,
+      chat: async () => "ignored",
+    });
+
+    const job = await createJob({
+      userId: "u1",
+      title: "Engineer",
+      company: "Acme",
+      description: "APIs",
+    });
+
+    const matched = await matchJob({ jobId: job.id, userId: "u1" });
+    assert.equal(matched.status, "failed");
+    assert.match(matched.errorMessage ?? "", /LLM unavailable/);
+  });
+
+  it("archiveJob returns false for foreign user", async () => {
+    setJobRepository(new InMemoryJobRepository());
+
+    const job = await createJob({
+      userId: "u1",
+      title: "Engineer",
+      company: "Acme",
+      description: "Role",
+    });
+
+    assert.equal(await archiveJob(job.id, "u2"), false);
+  });
+
+  it("searchJobs returns empty list", async () => {
+    assert.deepEqual(await searchJobs(), []);
+  });
+
+  it("rankJob returns score after successful match", async () => {
+    setJobRepository(new InMemoryJobRepository());
+    setResumeMatchLookup(async () => ({
+      resumeId: "resume-1",
+      skills: ["TypeScript"],
+      summary: "Engineer",
+      extractedText: "TypeScript developer",
+    }));
+    setJobsAgentDeps({
+      embed: async () => [1, 0],
+      cosineSimilarity: () => 0.85,
+      chat: async () => "Good fit.",
+    });
+
+    const job = await createJob({
+      userId: "u1",
+      title: "Engineer",
+      company: "Acme",
+      description: "TypeScript",
+    });
+
+    assert.equal(await rankJob(job.id, "u1"), 85);
+  });
+
+  it("rankJob throws when match fails", async () => {
+    setJobRepository(new InMemoryJobRepository());
+    setResumeMatchLookup(async () => null);
+
+    const job = await createJob({
+      userId: "u1",
+      title: "Engineer",
+      company: "Acme",
+      description: "Role",
+    });
+
+    await assert.rejects(() => rankJob(job.id, "u1"), /parse a resume/i);
+  });
+
+  it("saveJob is not implemented", async () => {
+    await assert.rejects(() => saveJob(), /Not implemented/);
+  });
+});
+
+describe("job repository helpers", () => {
+  it("toJobDto serializes dates", async () => {
+    const { toJobDto } = await import("../src/repository/job.repository.js");
+    const now = new Date("2026-01-01T00:00:00.000Z");
+    const dto = toJobDto({
+      id: "j1",
+      userId: "u1",
+      title: "Engineer",
+      company: "Acme",
+      url: null,
+      location: "Remote",
+      description: "Build",
+      status: "pending",
+      matchScore: null,
+      matchRationale: null,
+      errorMessage: null,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    assert.equal(dto.createdAt, now.toISOString());
+    assert.equal(dto.location, "Remote");
+  });
+});
+
+describe("PrismaJobRepository", () => {
+  it("maps prisma records through all repository methods", async () => {
+    const { PrismaJobRepository } = await import("../src/repository/prisma-job.repository.js");
+    const now = new Date("2026-01-01T00:00:00.000Z");
+    const baseRecord = {
+      id: "job-1",
+      userId: "u1",
+      title: "Engineer",
+      company: "Acme",
+      url: null,
+      location: "Remote",
+      description: "Build",
+      status: "pending" as const,
+      matchScore: null,
+      matchRationale: null,
+      errorMessage: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const db = {
+      job: {
+        create: async () => baseRecord,
+        findFirst: async () => baseRecord,
+        findMany: async () => [baseRecord],
+        update: async (args: { data: { status?: string; errorMessage?: string } }) => ({
+          ...baseRecord,
+          status: (args.data.status ?? baseRecord.status) as typeof baseRecord.status,
+          matchScore: args.data.status === "matched" ? 90 : null,
+          matchRationale: args.data.status === "matched" ? "Good" : null,
+          errorMessage: args.data.errorMessage ?? null,
+        }),
+        deleteMany: async () => ({ count: 1 }),
+      },
+    };
+
+    const repo = new PrismaJobRepository(db as never);
+
+    const created = await repo.create({
+      userId: "u1",
+      title: "Engineer",
+      company: "Acme",
+      description: "Build",
+    });
+    assert.equal(created.id, "job-1");
+
+    assert.ok(await repo.findByIdForUser("job-1", "u1"));
+    assert.equal((await repo.listByUserId("u1")).length, 1);
+    await repo.updateStatus("job-1", "matching");
+
+    const matched = await repo.updateMatchResult("job-1", {
+      status: "matched",
+      matchScore: 90,
+      matchRationale: "Good",
+    });
+    assert.equal(matched.matchScore, 90);
+
+    const failed = await repo.updateMatchResult("job-1", {
+      status: "failed",
+      errorMessage: "nope",
+    });
+    assert.equal(failed.status, "failed");
+
+    assert.equal(await repo.deleteForUser("job-1", "u1"), true);
   });
 });

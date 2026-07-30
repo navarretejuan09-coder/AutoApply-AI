@@ -3,9 +3,13 @@ import type { AuthUserDto } from "@autoapply/contracts";
 
 import type { CreateUserInput, UserRecord, UserRepository } from "./user.repository.js";
 
+type UserDb = Pick<typeof prisma, "user">;
+
 export class PrismaUserRepository implements UserRepository {
+  constructor(private readonly db: UserDb = prisma) {}
+
   async findById(id: string): Promise<AuthUserDto | null> {
-    const user = await prisma.user.findUnique({
+    const user = await this.db.user.findUnique({
       where: { id },
       select: { id: true, email: true, name: true },
     });
@@ -14,7 +18,7 @@ export class PrismaUserRepository implements UserRepository {
   }
 
   async findByEmail(email: string): Promise<UserRecord | null> {
-    const user = await prisma.user.findUnique({
+    const user = await this.db.user.findUnique({
       where: { email },
       select: {
         id: true,
@@ -28,7 +32,7 @@ export class PrismaUserRepository implements UserRepository {
   }
 
   async create(input: CreateUserInput): Promise<AuthUserDto> {
-    const user = await prisma.user.create({
+    const user = await this.db.user.create({
       data: {
         email: input.email,
         passwordHash: input.passwordHash,
@@ -41,7 +45,7 @@ export class PrismaUserRepository implements UserRepository {
   }
 
   async emailExists(email: string): Promise<boolean> {
-    const user = await prisma.user.findUnique({
+    const user = await this.db.user.findUnique({
       where: { email },
       select: { id: true },
     });

@@ -20,7 +20,7 @@
     "dev": "tsc -p tsconfig.json --watch",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "node --test"
+    "test": "tsx --test test/env.test.ts test/config.test.ts"
   },
   "dependencies": {
     "zod": "^3.24.1"
@@ -28,6 +28,7 @@
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
     "eslint": "^9.17.0",
     "globals": "^15.14.0",
     "typescript": "^5.7.2",

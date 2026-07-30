@@ -16,13 +16,14 @@
     "dev": "tsc -p tsconfig.json --watch",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "test": "node --test"
+    "test": "tsx --test test/types.test.ts"
   },
   "dependencies": {
     "@autoapply/contracts": "workspace:*"
   },
   "devDependencies": {
     "@autoapply/config": "workspace:*",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }
 }

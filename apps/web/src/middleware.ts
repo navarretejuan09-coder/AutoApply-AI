@@ -3,8 +3,13 @@ import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { config as appConfig } from "@autoapply/config";
 
-export async function middleware(request: NextRequest) {
-  const token = await getToken({
+type GetTokenFn = typeof getToken;
+
+export async function evaluateMiddleware(
+  request: NextRequest,
+  getTokenFn: GetTokenFn = getToken,
+) {
+  const token = await getTokenFn({
     req: request,
     secret: appConfig.auth.secret,
   });
@@ -23,6 +28,10 @@ export async function middleware(request: NextRequest) {
   }
 
   return NextResponse.next();
+}
+
+export async function middleware(request: NextRequest) {
+  return evaluateMiddleware(request);
 }
 
 export const config = {
