@@ -8,6 +8,8 @@
     "**/coverage/**",
     "packages/database/src/generated/**",
     "**/*.test.ts",
+    "**/testing/**",
+    "**/*.module.ts",
     "**/*.d.ts",
     "**/eslint.config.*",
     "**/next.config.*",

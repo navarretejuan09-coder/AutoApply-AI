@@ -14,6 +14,10 @@ export function setUserRepository(repo: UserRepository): void {
   repository = repo;
 }
 
+export function resetUserRepository(): void {
+  repository = new PrismaUserRepository();
+}
+
 export async function findUserById(userId: string): Promise<AuthUserDto | null> {
   return repository.findById(userId);
 }

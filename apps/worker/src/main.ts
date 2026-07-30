@@ -13,7 +13,11 @@ import { createLogger } from "@autoapply/logger";
 import { Worker } from "bullmq";
 import { Redis } from "ioredis";
 
-import { handleHealthPingJob, handleJobMatchJob, handleResumeParseJob } from "./handlers.js";
+import {
+  createHealthPingHandler,
+  createJobMatchHandler,
+  createResumeParseHandler,
+} from "./handlers.js";
 
 const logger = createLogger("worker", { service: "worker" });
 
@@ -23,15 +27,17 @@ const connection = new Redis(config.redis.url, {
   maxRetriesPerRequest: null,
 });
 
-const healthWorker = new Worker<HealthPingJobData>(HEALTH_QUEUE_NAME, handleHealthPingJob, {
+const healthWorker = new Worker<HealthPingJobData>(HEALTH_QUEUE_NAME, createHealthPingHandler(), {
   connection,
 });
 
-const resumeWorker = new Worker<ResumeParseJobData>(RESUME_QUEUE_NAME, handleResumeParseJob, {
+const resumeWorker = new Worker<ResumeParseJobData>(RESUME_QUEUE_NAME, createResumeParseHandler(), {
   connection,
 });
 
-const jobsWorker = new Worker<JobMatchJobData>(JOB_QUEUE_NAME, handleJobMatchJob, { connection });
+const jobsWorker = new Worker<JobMatchJobData>(JOB_QUEUE_NAME, createJobMatchHandler(), {
+  connection,
+});
 
 for (const worker of [healthWorker, resumeWorker, jobsWorker]) {
   worker.on("failed", (job, error) => {

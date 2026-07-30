@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { describe, it, mock } from "node:test";
+import { afterEach, describe, it, mock } from "node:test";
 
 import "reflect-metadata";
 import "../src/load-env.js";
@@ -11,10 +11,16 @@ import {
   CORRELATION_ID_HEADER,
   RESUME_PARSE_JOB_NAME,
   RESUME_QUEUE_NAME,
+  type HealthPingJobData,
+  type JobMatchJobData,
+  type ResumeParseJobData,
 } from "@autoapply/contracts";
-import { setJobRepository } from "@autoapply/jobs";
-import { setResumeRepository } from "@autoapply/resume";
-import { setUserRepository } from "@autoapply/user";
+import { resetJobRepository, setJobRepository } from "@autoapply/jobs";
+import { InMemoryJobRepository } from "@autoapply/jobs/testing";
+import { resetResumeRepository, setResumeRepository } from "@autoapply/resume";
+import { InMemoryResumeRepository } from "@autoapply/resume/testing";
+import { resetUserRepository, setUserRepository } from "@autoapply/user";
+import { InMemoryUserRepository } from "@autoapply/user/testing";
 import { NotFoundException, UnauthorizedException, BadRequestException } from "@nestjs/common";
 import type { ExecutionContext, CallHandler } from "@nestjs/common";
 import { of } from "rxjs";
@@ -27,194 +33,47 @@ import { JobsService } from "../src/jobs/jobs.service.js";
 import { ResumesController } from "../src/resumes/resumes.controller.js";
 import { ResumesService } from "../src/resumes/resumes.service.js";
 import { UsersController } from "../src/users/users.controller.js";
-import { QueueService } from "../src/queue/queue.service.js";
+import {
+  type EnqueueableQueue,
+  type QueueConnection,
+  type QueueServiceDeps,
+  createQueueDeps,
+  QueueService,
+} from "../src/queue/queue.service.js";
 import { RequestContextService } from "../src/common/request-context.service.js";
 import { CorrelationIdInterceptor } from "../src/common/correlation-id.interceptor.js";
 import { JwtAuthGuard } from "../src/auth/jwt-auth.guard.js";
 import { UsersService } from "../src/users/users.service.js";
 
-interface UserRepository {
-  findById(id: string): Promise<{ id: string; email: string; name: string | null } | null>;
-  findByEmail(email: string): Promise<unknown>;
-  create(input: {
-    email: string;
-    passwordHash: string;
-    name?: string | null;
-  }): Promise<{ id: string; email: string; name: string | null }>;
-  emailExists(email: string): Promise<boolean>;
+afterEach(() => {
+  resetUserRepository();
+  resetJobRepository();
+  resetResumeRepository();
+});
+
+function createMockQueue<T>(
+  add: EnqueueableQueue<T>["add"] = async () => ({ id: "noop" }),
+): EnqueueableQueue<T> {
+  return {
+    add,
+    close: async () => undefined,
+  };
 }
 
-interface ResumeRepository {
-  create(input: { userId: string; fileName: string; mimeType: string; content: Buffer }): Promise<{
-    id: string;
-    userId: string;
-    fileName: string;
-    mimeType: string;
-    status: "pending";
-    extractedText: null;
-    skills: [];
-    summary: null;
-    errorMessage: null;
-    createdAt: Date;
-    updatedAt: Date;
-  }>;
-  findBlobByIdForUser(id: string, userId: string): Promise<null>;
-  findByIdForUser(id: string, userId: string): Promise<null>;
-  findLatestParsedForUser(userId: string): Promise<null>;
-  listByUserId(userId: string): Promise<[]>;
-  updateStatus(id: string, status: string): Promise<void>;
-  updateParseResult(): Promise<never>;
-}
-
-interface JobRepository {
-  create(input: {
-    userId: string;
-    title: string;
-    company: string;
-    description: string;
-    url?: string | null;
-    location?: string | null;
-  }): Promise<{
-    id: string;
-    userId: string;
-    title: string;
-    company: string;
-    url: string | null;
-    location: string | null;
-    description: string;
-    status: "pending";
-    matchScore: null;
-    matchRationale: null;
-    errorMessage: null;
-    createdAt: Date;
-    updatedAt: Date;
-  }>;
-  findByIdForUser(id: string, userId: string): Promise<null>;
-  listByUserId(userId: string): Promise<[]>;
-  updateStatus(id: string, status: string): Promise<void>;
-  updateMatchResult(): Promise<never>;
-  deleteForUser(id: string, userId: string): Promise<boolean>;
-}
-
-class InMemoryUserRepository implements UserRepository {
-  private records = new Map<
-    string,
-    { id: string; email: string; name: string | null; passwordHash: string }
-  >();
-
-  seed(user: { id: string; email: string; name: string | null }) {
-    this.records.set(user.id, { ...user, passwordHash: "hash" });
-  }
-
-  async findById(id: string) {
-    const record = this.records.get(id);
-    return record ? { id: record.id, email: record.email, name: record.name } : null;
-  }
-
-  async findByEmail(email: string) {
-    return [...this.records.values()].find((record) => record.email === email) ?? null;
-  }
-
-  async create(input: { email: string; passwordHash: string; name?: string | null }) {
-    const id = `user-${this.records.size + 1}`;
-    const record = {
-      id,
-      email: input.email,
-      name: input.name ?? null,
-      passwordHash: input.passwordHash,
-    };
-    this.records.set(id, record);
-    return { id: record.id, email: record.email, name: record.name };
-  }
-
-  async emailExists(email: string) {
-    return [...this.records.values()].some((record) => record.email === email);
-  }
-}
-
-class InMemoryResumeRepository implements ResumeRepository {
-  async create(input: { userId: string; fileName: string; mimeType: string; content: Buffer }) {
-    return {
-      id: "resume-1",
-      userId: input.userId,
-      fileName: input.fileName,
-      mimeType: input.mimeType,
-      status: "pending" as const,
-      extractedText: null,
-      skills: [],
-      summary: null,
-      errorMessage: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-  }
-
-  async findBlobByIdForUser() {
-    return null;
-  }
-
-  async findByIdForUser() {
-    return null;
-  }
-
-  async findLatestParsedForUser() {
-    return null;
-  }
-
-  async listByUserId() {
-    return [];
-  }
-
-  async updateStatus() {}
-
-  async updateParseResult() {
-    throw new Error("not used");
-  }
-}
-
-class InMemoryJobRepository implements JobRepository {
-  async create(input: {
-    userId: string;
-    title: string;
-    company: string;
-    description: string;
-    url?: string | null;
-    location?: string | null;
-  }) {
-    return {
-      id: "job-1",
-      userId: input.userId,
-      title: input.title,
-      company: input.company,
-      url: input.url ?? null,
-      location: input.location ?? null,
-      description: input.description,
-      status: "pending" as const,
-      matchScore: null,
-      matchRationale: null,
-      errorMessage: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-  }
-
-  async findByIdForUser() {
-    return null;
-  }
-
-  async listByUserId() {
-    return [];
-  }
-
-  async updateStatus() {}
-
-  async updateMatchResult() {
-    throw new Error("not used");
-  }
-
-  async deleteForUser() {
-    return true;
-  }
+function createTestQueueDeps(
+  overrides: {
+    connection?: QueueConnection;
+    healthQueue?: EnqueueableQueue<HealthPingJobData>;
+    resumeQueue?: EnqueueableQueue<ResumeParseJobData>;
+    jobsQueue?: EnqueueableQueue<JobMatchJobData>;
+  } = {},
+): QueueServiceDeps {
+  return {
+    connection: overrides.connection ?? { quit: async () => "OK" },
+    healthQueue: overrides.healthQueue ?? createMockQueue(),
+    resumeQueue: overrides.resumeQueue ?? createMockQueue(),
+    jobsQueue: overrides.jobsQueue ?? createMockQueue(),
+  };
 }
 
 describe("HealthController", () => {
@@ -244,7 +103,7 @@ describe("RequestContextService", () => {
 describe("UsersService", () => {
   it("findById returns user when found", async () => {
     const repo = new InMemoryUserRepository();
-    repo.seed({ id: "u1", email: "a@b.com", name: "A" });
+    repo.seed({ id: "u1", email: "a@b.com", name: "A", passwordHash: "hash" });
     setUserRepository(repo);
 
     const service = new UsersService();
@@ -338,6 +197,28 @@ describe("ResumesService", () => {
 });
 
 describe("QueueService", () => {
+  it("createQueueDeps wires infrastructure factories", () => {
+    const connection: QueueConnection = { quit: async () => "OK" };
+    const healthQueue = createMockQueue<HealthPingJobData>();
+    const resumeQueue = createMockQueue<ResumeParseJobData>();
+    const jobsQueue = createMockQueue<JobMatchJobData>();
+
+    const deps = createQueueDeps({
+      createConnection: () => connection,
+      createHealthQueue: (conn) => {
+        assert.equal(conn, connection);
+        return healthQueue;
+      },
+      createResumeQueue: () => resumeQueue,
+      createJobsQueue: () => jobsQueue,
+    });
+
+    assert.equal(deps.connection, connection);
+    assert.equal(deps.healthQueue, healthQueue);
+    assert.equal(deps.resumeQueue, resumeQueue);
+    assert.equal(deps.jobsQueue, jobsQueue);
+  });
+
   it("enqueue methods use request correlation id when set", async () => {
     const ctx = new RequestContextService();
     ctx.setCorrelationId("corr-from-request");
@@ -346,12 +227,14 @@ describe("QueueService", () => {
     const resumeAdd = mock.fn(async () => ({ id: "r1", queueName: "resume" }));
     const jobsAdd = mock.fn(async () => ({ id: "j1", queueName: "jobs" }));
 
-    const service = new QueueService(ctx, {
-      connection: { quit: async () => "OK" } as never,
-      healthQueue: { add: healthAdd, close: async () => undefined } as never,
-      resumeQueue: { add: resumeAdd, close: async () => undefined } as never,
-      jobsQueue: { add: jobsAdd, close: async () => undefined } as never,
-    });
+    const service = new QueueService(
+      ctx,
+      createTestQueueDeps({
+        healthQueue: { add: healthAdd, close: async () => undefined },
+        resumeQueue: { add: resumeAdd, close: async () => undefined },
+        jobsQueue: { add: jobsAdd, close: async () => undefined },
+      }),
+    );
 
     await service.enqueueHealthPing("api-test");
     await service.enqueueResumeParse("resume-1", "u1");
@@ -376,12 +259,12 @@ describe("QueueService", () => {
     const ctx = new RequestContextService();
     const healthAdd = mock.fn(async () => ({ id: "h1", queueName: "health" }));
 
-    const service = new QueueService(ctx, {
-      connection: { quit: async () => "OK" } as never,
-      healthQueue: { add: healthAdd, close: async () => undefined } as never,
-      resumeQueue: { add: async () => ({ id: "r1" }), close: async () => undefined } as never,
-      jobsQueue: { add: async () => ({ id: "j1" }), close: async () => undefined } as never,
-    });
+    const service = new QueueService(
+      ctx,
+      createTestQueueDeps({
+        healthQueue: { add: healthAdd, close: async () => undefined },
+      }),
+    );
 
     await service.enqueueHealthPing("api-test");
 
@@ -558,7 +441,7 @@ describe("service delegates", () => {
     const service = new JobsService({} as QueueService);
     assert.deepEqual(await service.listForUser("u1"), []);
     assert.equal(await service.getForUser("j1", "u1"), null);
-    assert.equal(await service.archiveForUser("j1", "u1"), true);
+    assert.equal(await service.archiveForUser("j1", "u1"), false);
   });
 
   it("ResumesService list/get delegate to domain", async () => {

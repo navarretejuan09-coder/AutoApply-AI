@@ -12,28 +12,15 @@ class PoolMock {
   end = poolEndMock;
 }
 
-/**
- * Node 20: `namedExports` / `defaultExport`
- * Node 22+: `exports` / `exports.default` (`namedExports` still works, deprecated)
- */
 function mockEsmModule(
   specifier: string,
   options: { named?: Record<string, unknown>; defaultExport?: unknown },
 ) {
-  const major = Number(process.versions.node.split(".")[0]);
-  if (major >= 22) {
-    const exports: Record<string, unknown> = { ...(options.named ?? {}) };
-    if (options.defaultExport !== undefined) {
-      exports.default = options.defaultExport;
-    }
-    mock.module(specifier, { exports });
-    return;
+  const exports: Record<string, unknown> = { ...(options.named ?? {}) };
+  if (options.defaultExport !== undefined) {
+    exports.default = options.defaultExport;
   }
-
-  mock.module(specifier, {
-    namedExports: options.named ?? {},
-    ...(options.defaultExport !== undefined ? { defaultExport: options.defaultExport } : {}),
-  });
+  mock.module(specifier, { exports });
 }
 
 mockEsmModule("@prisma/adapter-pg", {
