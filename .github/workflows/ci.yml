@@ -20,11 +20,13 @@ jobs:
           node-version: 20
           cache: pnpm
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
+      # setup:env must run before install: packages/database postinstall runs
+      # `prisma generate`, which requires DATABASE_URL from root `.env`.
       - name: Setup env
         run: pnpm setup:env
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Format check
         run: pnpm format:check
