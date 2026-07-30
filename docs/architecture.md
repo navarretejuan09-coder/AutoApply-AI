@@ -92,7 +92,7 @@ packages/
 | Milestone | Fills in                                                                                                                  |
 | --------- | ------------------------------------------------------------------------------------------------------------------------- |
 | M2        | `@autoapply/resume` — upload (Postgres bytes), async BullMQ parse, deterministic PDF/DOCX skills extraction, dashboard UI |
-| M3        | `@autoapply/llm`, `embeddings`, `agents`, `prompts` — Ollama integration; manual job paste + AI match UI |
+| M3        | `@autoapply/llm`, `embeddings`, `agents`, `prompts` — Ollama integration; manual job paste + AI match UI                  |
 | M4        | `@autoapply/plugin-linkedin`, browser cookie persistence, Playwright execution                                            |
 | M5        | `@autoapply/analytics`, `@autoapply/notifications`                                                                        |
 | M6        | Additional job board plugins                                                                                              |

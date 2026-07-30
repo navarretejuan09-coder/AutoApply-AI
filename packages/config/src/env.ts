@@ -40,10 +40,7 @@ export const webEnvSchema = z.object({
 });
 
 export const ollamaEnvSchema = z.object({
-  OLLAMA_HOST: z
-    .string()
-    .url("OLLAMA_HOST must be a valid URL")
-    .default("http://localhost:11434"),
+  OLLAMA_HOST: z.string().url("OLLAMA_HOST must be a valid URL").default("http://localhost:11434"),
   OLLAMA_CHAT_MODEL: z.string().min(1).default("llama3.2"),
   OLLAMA_EMBED_MODEL: z.string().min(1).default("nomic-embed-text"),
 });
@@ -53,11 +50,7 @@ export const browserEnvSchema = z.object({
 });
 
 export const resumeEnvSchema = z.object({
-  RESUME_MAX_BYTES: z.coerce
-    .number()
-    .int()
-    .positive()
-    .default(5_242_880), // keep in sync with DEFAULT_RESUME_MAX_BYTES in contracts
+  RESUME_MAX_BYTES: z.coerce.number().int().positive().default(5_242_880), // keep in sync with DEFAULT_RESUME_MAX_BYTES in contracts
 });
 
 export const nodeEnvSchema = z.object({

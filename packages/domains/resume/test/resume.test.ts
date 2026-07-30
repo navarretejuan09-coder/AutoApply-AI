@@ -5,10 +5,7 @@ import type { ResumeStatus } from "@autoapply/contracts";
 import { config } from "@autoapply/config";
 
 import { extractSkills } from "../src/parser/extract-skills.js";
-import {
-  extractTextFromResume,
-  isSupportedResumeMimeType,
-} from "../src/parser/extract-text.js";
+import { extractTextFromResume, isSupportedResumeMimeType } from "../src/parser/extract-text.js";
 import { summarizeText } from "../src/parser/summarize.js";
 import {
   getLatestParsedResumeForMatching,
@@ -384,7 +381,8 @@ describe("resume repository helpers", () => {
 
 describe("PrismaResumeRepository", () => {
   it("maps prisma records through repository methods", async () => {
-    const { PrismaResumeRepository } = await import("../src/repository/prisma-resume.repository.js");
+    const { PrismaResumeRepository } =
+      await import("../src/repository/prisma-resume.repository.js");
     const now = new Date("2026-01-01T00:00:00.000Z");
     const metadata = {
       id: "r1",

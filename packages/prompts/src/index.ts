@@ -43,10 +43,7 @@ export function getPromptDefinition(name: PromptName): PromptDefinition {
   return PROMPTS[name];
 }
 
-export function renderPrompt(
-  template: string,
-  vars: Record<string, string>,
-): string {
+export function renderPrompt(template: string, vars: Record<string, string>): string {
   return template.replace(/\{\{(\w+)\}\}/g, (_match, key: string) => {
     return vars[key] ?? "";
   });

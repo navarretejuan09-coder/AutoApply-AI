@@ -45,12 +45,7 @@ interface UserRepository {
 }
 
 interface ResumeRepository {
-  create(input: {
-    userId: string;
-    fileName: string;
-    mimeType: string;
-    content: Buffer;
-  }): Promise<{
+  create(input: { userId: string; fileName: string; mimeType: string; content: Buffer }): Promise<{
     id: string;
     userId: string;
     fileName: string;
@@ -102,7 +97,10 @@ interface JobRepository {
 }
 
 class InMemoryUserRepository implements UserRepository {
-  private records = new Map<string, { id: string; email: string; name: string | null; passwordHash: string }>();
+  private records = new Map<
+    string,
+    { id: string; email: string; name: string | null; passwordHash: string }
+  >();
 
   seed(user: { id: string; email: string; name: string | null }) {
     this.records.set(user.id, { ...user, passwordHash: "hash" });
@@ -119,7 +117,12 @@ class InMemoryUserRepository implements UserRepository {
 
   async create(input: { email: string; passwordHash: string; name?: string | null }) {
     const id = `user-${this.records.size + 1}`;
-    const record = { id, email: input.email, name: input.name ?? null, passwordHash: input.passwordHash };
+    const record = {
+      id,
+      email: input.email,
+      name: input.name ?? null,
+      passwordHash: input.passwordHash,
+    };
     this.records.set(id, record);
     return { id: record.id, email: record.email, name: record.name };
   }
@@ -469,7 +472,10 @@ describe("API controllers", () => {
     assert.equal(list.jobs.length, 1);
 
     assert.equal((await controller.getJob(user, "j1")).id, "j1");
-    await assert.rejects(() => controller.getJob({ sub: "u2", email: "x@y.com" }, "j1"), NotFoundException);
+    await assert.rejects(
+      () => controller.getJob({ sub: "u2", email: "x@y.com" }, "j1"),
+      NotFoundException,
+    );
 
     assert.deepEqual(await controller.deleteJob(user, "j1"), { ok: true });
 

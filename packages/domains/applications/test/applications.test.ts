@@ -20,9 +20,6 @@ describe("queueApplication", () => {
 describe("submitApplication", () => {
   it("throws not implemented after logging", async () => {
     mock.method(console, "warn", () => {});
-    await assert.rejects(
-      () => submitApplication("app-1"),
-      /Not implemented: submitApplication/,
-    );
+    await assert.rejects(() => submitApplication("app-1"), /Not implemented: submitApplication/);
   });
 });

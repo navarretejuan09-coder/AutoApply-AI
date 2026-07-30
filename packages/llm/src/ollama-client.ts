@@ -59,9 +59,7 @@ export async function ollamaPost<T>(
 
     const message = error instanceof Error ? error.message : "Unknown Ollama error";
     logger.error("Ollama request error", { url, error: message });
-    throw new OllamaError(
-      `Cannot reach Ollama at ${host}. Is it running? (${message})`,
-    );
+    throw new OllamaError(`Cannot reach Ollama at ${host}. Is it running? (${message})`);
   } finally {
     clearTimeout(timer);
   }

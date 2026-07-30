@@ -20,14 +20,14 @@
 
 ## File map
 
-| File | Responsibility |
-| --- | --- |
-| `package.json` | Add `c8` + `test:coverage` script |
-| `.c8rc.json` | Include/exclude, `all: true`, reporters, thresholds |
-| `.github/workflows/ci.yml` | Run `pnpm test:coverage` |
+| File                                         | Responsibility                                          |
+| -------------------------------------------- | ------------------------------------------------------- |
+| `package.json`                               | Add `c8` + `test:coverage` script                       |
+| `.c8rc.json`                                 | Include/exclude, `all: true`, reporters, thresholds     |
+| `.github/workflows/ci.yml`                   | Run `pnpm test:coverage`                                |
 | `docs/architecture.md` (optional light note) | Mention coverage gate if CI docs already describe tests |
-| `packages/*/test/*.test.ts` (many) | New unit tests to raise coverage |
-| `apps/*/…/*.test.ts` (as needed) | API/worker/web/browser coverage |
+| `packages/*/test/*.test.ts` (many)           | New unit tests to raise coverage                        |
+| `apps/*/…/*.test.ts` (as needed)             | API/worker/web/browser coverage                         |
 
 ---
 
@@ -85,8 +85,8 @@ Add to root `package.json` scripts:
 In `.github/workflows/ci.yml`, change the Test step to:
 
 ```yaml
-      - name: Test with coverage
-        run: pnpm test:coverage
+- name: Test with coverage
+  run: pnpm test:coverage
 ```
 
 - [ ] **Step 4: Baseline**
@@ -116,7 +116,7 @@ git commit -m "ci: gate PRs on unit tests with 80% c8 coverage"
 
 Priority order:
 
-1. Pure libs: shared, types, config, contracts, logger, commands, events, prompts, embeddings, agents, llm, auth, domains/*, plugins/*, automation, ai, sdk, database (non-generated)
+1. Pure libs: shared, types, config, contracts, logger, commands, events, prompts, embeddings, agents, llm, auth, domains/_, plugins/_, automation, ai, sdk, database (non-generated)
 2. apps/api services + apps/worker helpers (mock deps)
 3. apps/browser runtime helpers
 4. apps/web non-UI modules first (`lib/`), then only as much UI as needed
@@ -142,14 +142,14 @@ Priority order:
 
 ## Spec coverage checklist
 
-| Spec requirement | Task |
-| --- | --- |
-| Root c8 + 80% lines/statements | Task 1 |
-| CI uses test:coverage | Task 1 |
-| Excludes generated/dist/.next/tests | Task 1 `.c8rc.json` |
-| Write tests to green the gate | Task 2 |
-| Branch protection documented | Task 3 + existing design checklist |
-| No Vitest/Codecov/E2E | Honored |
+| Spec requirement                    | Task                               |
+| ----------------------------------- | ---------------------------------- |
+| Root c8 + 80% lines/statements      | Task 1                             |
+| CI uses test:coverage               | Task 1                             |
+| Excludes generated/dist/.next/tests | Task 1 `.c8rc.json`                |
+| Write tests to green the gate       | Task 2                             |
+| Branch protection documented        | Task 3 + existing design checklist |
+| No Vitest/Codecov/E2E               | Honored                            |
 
 ## Execution
 

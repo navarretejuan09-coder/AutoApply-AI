@@ -8,7 +8,11 @@ import {
   setUserRepository,
   verifyUserCredentials,
 } from "../src/index.js";
-import type { CreateUserInput, UserRecord, UserRepository } from "../src/repository/user.repository.js";
+import type {
+  CreateUserInput,
+  UserRecord,
+  UserRepository,
+} from "../src/repository/user.repository.js";
 
 class InMemoryUserRepository implements UserRepository {
   private records = new Map<string, UserRecord>();

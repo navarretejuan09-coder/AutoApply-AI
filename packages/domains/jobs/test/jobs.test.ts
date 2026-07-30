@@ -201,10 +201,7 @@ describe("jobs domain", () => {
   it("matchJob throws when job not found", async () => {
     setJobRepository(new InMemoryJobRepository());
 
-    await assert.rejects(
-      () => matchJob({ jobId: "missing", userId: "u1" }),
-      /Job not found/,
-    );
+    await assert.rejects(() => matchJob({ jobId: "missing", userId: "u1" }), /Job not found/);
   });
 
   it("matchJob handles agent errors gracefully", async () => {

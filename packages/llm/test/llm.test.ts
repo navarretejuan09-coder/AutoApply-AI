@@ -41,8 +41,13 @@ describe("llm.chat", () => {
   });
 
   it("maps non-OK Ollama responses to errors", async () => {
-    globalThis.fetch = mock.fn(async () => new Response("model not found", { status: 404 })) as typeof fetch;
+    globalThis.fetch = mock.fn(
+      async () => new Response("model not found", { status: 404 }),
+    ) as typeof fetch;
 
-    await assert.rejects(() => chat([{ role: "user", content: "hi" }]), /Ollama request failed \(404\)/);
+    await assert.rejects(
+      () => chat([{ role: "user", content: "hi" }]),
+      /Ollama request failed \(404\)/,
+    );
   });
 });

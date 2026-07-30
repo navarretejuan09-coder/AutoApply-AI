@@ -1,12 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import {
-  getPrompt,
-  getPromptDefinition,
-  listPromptNames,
-  renderPrompt,
-} from "../src/index.js";
+import { getPrompt, getPromptDefinition, listPromptNames, renderPrompt } from "../src/index.js";
 
 describe("prompts", () => {
   it("lists registered prompts", () => {

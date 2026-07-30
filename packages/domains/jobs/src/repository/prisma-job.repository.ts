@@ -1,12 +1,7 @@
 import { prisma } from "@autoapply/database";
 import type { JobStatus } from "@autoapply/contracts";
 
-import type {
-  CreateJobInput,
-  JobRecord,
-  JobRepository,
-  MatchWrite,
-} from "./job.repository.js";
+import type { CreateJobInput, JobRecord, JobRepository, MatchWrite } from "./job.repository.js";
 
 type JobDb = Pick<typeof prisma, "job">;
 

@@ -5,10 +5,7 @@ import { config as appConfig } from "@autoapply/config";
 
 type GetTokenFn = typeof getToken;
 
-export async function evaluateMiddleware(
-  request: NextRequest,
-  getTokenFn: GetTokenFn = getToken,
-) {
+export async function evaluateMiddleware(request: NextRequest, getTokenFn: GetTokenFn = getToken) {
   const token = await getTokenFn({
     req: request,
     secret: appConfig.auth.secret,

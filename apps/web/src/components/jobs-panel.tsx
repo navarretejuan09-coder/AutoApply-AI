@@ -99,12 +99,7 @@ function JobCard({
             Open posting
           </a>
         ) : null}
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={deleting}
-          onClick={() => onDelete(job.id)}
-        >
+        <Button variant="outline" size="sm" disabled={deleting} onClick={() => onDelete(job.id)}>
           Remove
         </Button>
       </div>

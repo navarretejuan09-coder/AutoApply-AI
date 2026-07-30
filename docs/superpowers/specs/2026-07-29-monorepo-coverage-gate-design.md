@@ -18,12 +18,12 @@ Every pull request and push to `main` must pass unit tests and fail when overall
 
 ## Coverage tooling
 
-| Piece | Responsibility |
-| --- | --- |
-| Root `c8` devDependency | Instrument and report coverage for the monorepo test run |
-| Root script `test:coverage` | Run `c8` around `turbo run test` with the 80% check |
-| `.c8rc.json` (repo root) | Include/exclude globs and reporter defaults |
-| `.github/workflows/ci.yml` | Invoke `pnpm test:coverage` instead of `pnpm test` |
+| Piece                       | Responsibility                                           |
+| --------------------------- | -------------------------------------------------------- |
+| Root `c8` devDependency     | Instrument and report coverage for the monorepo test run |
+| Root script `test:coverage` | Run `c8` around `turbo run test` with the 80% check      |
+| `.c8rc.json` (repo root)    | Include/exclude globs and reporter defaults              |
+| `.github/workflows/ci.yml`  | Invoke `pnpm test:coverage` instead of `pnpm test`       |
 
 Local developers can still run `pnpm test` without the coverage gate; CI enforces coverage.
 
