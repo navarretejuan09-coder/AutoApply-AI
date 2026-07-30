@@ -26,7 +26,7 @@ export interface AppConfig {
   auth: { secret: string };
   api: { url: string; port: number; webUrl: string };
   web: { nextAuthUrl: string; publicApiUrl: string };
-  ai: { host?: string };
+  ai: { host: string; chatModel: string; embedModel: string };
   browser: { port: number };
   resume: { maxBytes: number };
   nodeEnv: "development" | "test" | "production";
@@ -77,7 +77,11 @@ class ConfigService {
 
   get ai(): AppConfig["ai"] {
     this.ollamaEnv ??= parseEnv(ollamaEnvSchema);
-    return { host: this.ollamaEnv.OLLAMA_HOST };
+    return {
+      host: this.ollamaEnv.OLLAMA_HOST,
+      chatModel: this.ollamaEnv.OLLAMA_CHAT_MODEL,
+      embedModel: this.ollamaEnv.OLLAMA_EMBED_MODEL,
+    };
   }
 
   get browser(): AppConfig["browser"] {

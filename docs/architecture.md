@@ -67,7 +67,7 @@ packages/
   domains/
     user/            UserRepository + createUser, verifyUserCredentials
     resume/          ResumeRepository + uploadResume, parseResume, list/get
-    jobs/          stub
+    jobs/          createJob, matchJob (Ollama score + rationale)
     applications/  stub
     analytics/     stub
     notifications/ stub
@@ -76,10 +76,10 @@ packages/
     greenhouse/    stub
     lever/         stub
     workday/       stub
-  llm/             stub
-  embeddings/      stub
-  agents/          stub
-  prompts/         stub
+  llm/             Ollama chat client
+  embeddings/      Ollama embeddings + cosineSimilarity
+  agents/          job-match agent
+  prompts/         prompt registry (job-match-rationale)
   ai/              facade re-exporting AI packages
   automation/      orchestration interfaces (no provider logic)
   database/        Prisma client (internal to domains)
@@ -92,7 +92,7 @@ packages/
 | Milestone | Fills in                                                                                                                  |
 | --------- | ------------------------------------------------------------------------------------------------------------------------- |
 | M2        | `@autoapply/resume` — upload (Postgres bytes), async BullMQ parse, deterministic PDF/DOCX skills extraction, dashboard UI |
-| M3        | `@autoapply/llm`, `embeddings`, `agents`, `prompts` — Ollama integration                                                  |
+| M3        | `@autoapply/llm`, `embeddings`, `agents`, `prompts` — Ollama integration; manual job paste + AI match UI |
 | M4        | `@autoapply/plugin-linkedin`, browser cookie persistence, Playwright execution                                            |
 | M5        | `@autoapply/analytics`, `@autoapply/notifications`                                                                        |
 | M6        | Additional job board plugins                                                                                              |

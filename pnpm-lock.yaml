@@ -47,6 +47,9 @@ importers:
       '@autoapply/events':
         specifier: workspace:*
         version: link:../../packages/events
+      '@autoapply/jobs':
+        specifier: workspace:*
+        version: link:../../packages/domains/jobs
       '@autoapply/logger':
         specifier: workspace:*
         version: link:../../packages/logger
@@ -215,6 +218,9 @@ importers:
       '@autoapply/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@autoapply/jobs':
+        specifier: workspace:*
+        version: link:../../packages/domains/jobs
       '@autoapply/logger':
         specifier: workspace:*
         version: link:../../packages/logger
@@ -246,13 +252,28 @@ importers:
 
   packages/agents:
     dependencies:
+      '@autoapply/embeddings':
+        specifier: workspace:*
+        version: link:../embeddings
+      '@autoapply/llm':
+        specifier: workspace:*
+        version: link:../llm
       '@autoapply/logger':
         specifier: workspace:*
         version: link:../logger
+      '@autoapply/prompts':
+        specifier: workspace:*
+        version: link:../prompts
     devDependencies:
       '@autoapply/config':
         specifier: workspace:*
         version: link:../config
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.20.1
+      tsx:
+        specifier: ^4.19.2
+        version: 4.23.1
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
@@ -443,19 +464,31 @@ importers:
 
   packages/domains/jobs:
     dependencies:
+      '@autoapply/agents':
+        specifier: workspace:*
+        version: link:../../agents
       '@autoapply/contracts':
         specifier: workspace:*
         version: link:../../contracts
-      '@autoapply/events':
+      '@autoapply/database':
         specifier: workspace:*
-        version: link:../../events
+        version: link:../../database
       '@autoapply/logger':
         specifier: workspace:*
         version: link:../../logger
+      '@autoapply/resume':
+        specifier: workspace:*
+        version: link:../resume
     devDependencies:
       '@autoapply/config':
         specifier: workspace:*
         version: link:../../config
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.20.1
+      tsx:
+        specifier: ^4.19.2
+        version: 4.23.1
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
@@ -543,13 +576,19 @@ importers:
 
   packages/embeddings:
     dependencies:
+      '@autoapply/config':
+        specifier: workspace:*
+        version: link:../config
       '@autoapply/logger':
         specifier: workspace:*
         version: link:../logger
     devDependencies:
-      '@autoapply/config':
-        specifier: workspace:*
-        version: link:../config
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.20.1
+      tsx:
+        specifier: ^4.19.2
+        version: 4.23.1
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
@@ -582,6 +621,9 @@ importers:
       '@types/node':
         specifier: ^22.10.2
         version: 22.20.1
+      tsx:
+        specifier: ^4.19.2
+        version: 4.23.1
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
@@ -671,6 +713,12 @@ importers:
       '@autoapply/config':
         specifier: workspace:*
         version: link:../config
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.20.1
+      tsx:
+        specifier: ^4.19.2
+        version: 4.23.1
       typescript:
         specifier: ^5.7.2
         version: 5.9.3

@@ -16,6 +16,7 @@
     "@autoapply/config": "workspace:*",
     "@autoapply/contracts": "workspace:*",
     "@autoapply/events": "workspace:*",
+    "@autoapply/jobs": "workspace:*",
     "@autoapply/logger": "workspace:*",
     "@autoapply/resume": "workspace:*",
     "@autoapply/user": "workspace:*",

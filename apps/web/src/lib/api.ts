@@ -1,7 +1,10 @@
 import { CORRELATION_ID_HEADER } from "@autoapply/contracts";
 import type {
   AuthUserDto,
+  CreateJobRequest,
+  CreateJobResponse,
   EnqueueHealthPingResponse,
+  ListJobsResponse,
   ListResumesResponse,
   UploadResumeResponse,
 } from "@autoapply/contracts";
@@ -79,4 +82,50 @@ export async function uploadResume(accessToken: string, file: File): Promise<Upl
   }
 
   return response.json() as Promise<UploadResumeResponse>;
+}
+
+export async function fetchJobs(accessToken: string): Promise<ListJobsResponse> {
+  const response = await fetch(`${getApiBaseUrl()}/api/jobs`, {
+    headers: buildHeaders(accessToken),
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch jobs with status ${response.status}`);
+  }
+
+  return response.json() as Promise<ListJobsResponse>;
+}
+
+export async function createJob(
+  accessToken: string,
+  body: CreateJobRequest,
+): Promise<CreateJobResponse> {
+  const response = await fetch(`${getApiBaseUrl()}/api/jobs`, {
+    method: "POST",
+    headers: {
+      ...buildHeaders(accessToken),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || `Job create failed with status ${response.status}`);
+  }
+
+  return response.json() as Promise<CreateJobResponse>;
+}
+
+export async function deleteJob(accessToken: string, jobId: string): Promise<void> {
+  const response = await fetch(`${getApiBaseUrl()}/api/jobs/${jobId}`, {
+    method: "DELETE",
+    headers: buildHeaders(accessToken),
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || `Job delete failed with status ${response.status}`);
+  }
 }

@@ -40,7 +40,12 @@ export const webEnvSchema = z.object({
 });
 
 export const ollamaEnvSchema = z.object({
-  OLLAMA_HOST: z.string().url("OLLAMA_HOST must be a valid URL").optional(),
+  OLLAMA_HOST: z
+    .string()
+    .url("OLLAMA_HOST must be a valid URL")
+    .default("http://localhost:11434"),
+  OLLAMA_CHAT_MODEL: z.string().min(1).default("llama3.2"),
+  OLLAMA_EMBED_MODEL: z.string().min(1).default("nomic-embed-text"),
 });
 
 export const browserEnvSchema = z.object({
