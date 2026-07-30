@@ -20,10 +20,7 @@ interface OllamaChatResponse {
   error?: string;
 }
 
-export async function chat(
-  messages: ChatMessage[],
-  options: ChatOptions = {},
-): Promise<string> {
+export async function chat(messages: ChatMessage[], options: ChatOptions = {}): Promise<string> {
   if (messages.length === 0) {
     throw new Error("chat requires at least one message");
   }

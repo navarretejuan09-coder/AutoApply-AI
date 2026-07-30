@@ -1,10 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import {
-  archiveJob,
-  createJob,
-  getJobForUser,
-  listJobsByUser,
-} from "@autoapply/jobs";
+import { archiveJob, createJob, getJobForUser, listJobsByUser } from "@autoapply/jobs";
 
 import { QueueService } from "../queue/queue.service.js";
 

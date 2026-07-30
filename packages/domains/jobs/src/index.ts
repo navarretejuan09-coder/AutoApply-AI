@@ -7,17 +7,10 @@ import {
 } from "@autoapply/agents";
 import type { JobDto } from "@autoapply/contracts";
 import { createLogger } from "@autoapply/logger";
-import {
-  getLatestParsedResumeForMatching,
-  type ResumeMatchContext,
-} from "@autoapply/resume";
+import { getLatestParsedResumeForMatching, type ResumeMatchContext } from "@autoapply/resume";
 
 import { PrismaJobRepository } from "./repository/prisma-job.repository.js";
-import {
-  type CreateJobInput,
-  type JobRepository,
-  toJobDto,
-} from "./repository/job.repository.js";
+import { type CreateJobInput, type JobRepository, toJobDto } from "./repository/job.repository.js";
 
 const logger = createLogger("jobs.domain");
 

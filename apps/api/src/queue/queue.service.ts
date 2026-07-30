@@ -17,6 +17,13 @@ import { Redis } from "ioredis";
 
 import { RequestContextService } from "../common/request-context.service.js";
 
+export interface QueueServiceDeps {
+  connection: Redis;
+  healthQueue: Queue<HealthPingJobData>;
+  resumeQueue: Queue<ResumeParseJobData>;
+  jobsQueue: Queue<JobMatchJobData>;
+}
+
 @Injectable()
 export class QueueService implements OnModuleDestroy {
   private readonly logger = createLogger("api.queue", { service: "api" });
@@ -27,22 +34,31 @@ export class QueueService implements OnModuleDestroy {
 
   constructor(
     @Inject(RequestContextService) private readonly requestContext: RequestContextService,
+    deps?: Partial<QueueServiceDeps>,
   ) {
-    this.connection = new Redis(config.redis.url, {
-      maxRetriesPerRequest: null,
-    });
+    this.connection =
+      deps?.connection ??
+      new Redis(config.redis.url, {
+        maxRetriesPerRequest: null,
+      });
 
-    this.healthQueue = new Queue<HealthPingJobData>(HEALTH_QUEUE_NAME, {
-      connection: this.connection,
-    });
+    this.healthQueue =
+      deps?.healthQueue ??
+      new Queue<HealthPingJobData>(HEALTH_QUEUE_NAME, {
+        connection: this.connection,
+      });
 
-    this.resumeQueue = new Queue<ResumeParseJobData>(RESUME_QUEUE_NAME, {
-      connection: this.connection,
-    });
+    this.resumeQueue =
+      deps?.resumeQueue ??
+      new Queue<ResumeParseJobData>(RESUME_QUEUE_NAME, {
+        connection: this.connection,
+      });
 
-    this.jobsQueue = new Queue<JobMatchJobData>(JOB_QUEUE_NAME, {
-      connection: this.connection,
-    });
+    this.jobsQueue =
+      deps?.jobsQueue ??
+      new Queue<JobMatchJobData>(JOB_QUEUE_NAME, {
+        connection: this.connection,
+      });
   }
 
   async enqueueHealthPing(source: string) {

@@ -9,6 +9,8 @@ import type {
   ResumeRepository,
 } from "./resume.repository.js";
 
+type ResumeDb = Pick<typeof prisma, "resume">;
+
 const metadataSelect = {
   id: true,
   userId: true,
@@ -52,8 +54,10 @@ function mapMetadata(record: {
 }
 
 export class PrismaResumeRepository implements ResumeRepository {
+  constructor(private readonly db: ResumeDb = prisma) {}
+
   async create(input: CreateResumeInput): Promise<ResumeMetadata> {
-    const resume = await prisma.resume.create({
+    const resume = await this.db.resume.create({
       data: {
         userId: input.userId,
         fileName: input.fileName,
@@ -67,7 +71,7 @@ export class PrismaResumeRepository implements ResumeRepository {
   }
 
   async findBlobByIdForUser(id: string, userId: string): Promise<ResumeBlob | null> {
-    const resume = await prisma.resume.findFirst({
+    const resume = await this.db.resume.findFirst({
       where: { id, userId },
       select: {
         id: true,
@@ -90,7 +94,7 @@ export class PrismaResumeRepository implements ResumeRepository {
   }
 
   async findByIdForUser(id: string, userId: string): Promise<ResumeMetadata | null> {
-    const resume = await prisma.resume.findFirst({
+    const resume = await this.db.resume.findFirst({
       where: { id, userId },
       select: metadataSelect,
     });
@@ -99,7 +103,7 @@ export class PrismaResumeRepository implements ResumeRepository {
   }
 
   async findLatestParsedForUser(userId: string): Promise<ResumeMetadata | null> {
-    const resume = await prisma.resume.findFirst({
+    const resume = await this.db.resume.findFirst({
       where: { userId, status: "parsed" },
       orderBy: { createdAt: "desc" },
       select: metadataSelect,
@@ -109,7 +113,7 @@ export class PrismaResumeRepository implements ResumeRepository {
   }
 
   async listByUserId(userId: string): Promise<ResumeMetadata[]> {
-    const resumes = await prisma.resume.findMany({
+    const resumes = await this.db.resume.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
       select: metadataSelect,
@@ -119,7 +123,7 @@ export class PrismaResumeRepository implements ResumeRepository {
   }
 
   async updateStatus(id: string, status: ResumeStatus): Promise<void> {
-    await prisma.resume.update({
+    await this.db.resume.update({
       where: { id },
       data: { status },
       select: { id: true },
@@ -129,7 +133,7 @@ export class PrismaResumeRepository implements ResumeRepository {
   async updateParseResult(id: string, input: ParseWrite): Promise<ResumeMetadata> {
     switch (input.status) {
       case "parsed": {
-        const resume = await prisma.resume.update({
+        const resume = await this.db.resume.update({
           where: { id },
           data: {
             status: "parsed",
@@ -143,7 +147,7 @@ export class PrismaResumeRepository implements ResumeRepository {
         return mapMetadata(resume);
       }
       case "failed": {
-        const resume = await prisma.resume.update({
+        const resume = await this.db.resume.update({
           where: { id },
           data: {
             status: "failed",

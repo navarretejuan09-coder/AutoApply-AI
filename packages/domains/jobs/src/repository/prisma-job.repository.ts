@@ -1,12 +1,9 @@
 import { prisma } from "@autoapply/database";
 import type { JobStatus } from "@autoapply/contracts";
 
-import type {
-  CreateJobInput,
-  JobRecord,
-  JobRepository,
-  MatchWrite,
-} from "./job.repository.js";
+import type { CreateJobInput, JobRecord, JobRepository, MatchWrite } from "./job.repository.js";
+
+type JobDb = Pick<typeof prisma, "job">;
 
 const jobSelect = {
   id: true,
@@ -57,8 +54,10 @@ function mapJob(record: {
 }
 
 export class PrismaJobRepository implements JobRepository {
+  constructor(private readonly db: JobDb = prisma) {}
+
   async create(input: CreateJobInput): Promise<JobRecord> {
-    const job = await prisma.job.create({
+    const job = await this.db.job.create({
       data: {
         userId: input.userId,
         title: input.title,
@@ -74,7 +73,7 @@ export class PrismaJobRepository implements JobRepository {
   }
 
   async findByIdForUser(id: string, userId: string): Promise<JobRecord | null> {
-    const job = await prisma.job.findFirst({
+    const job = await this.db.job.findFirst({
       where: { id, userId },
       select: jobSelect,
     });
@@ -83,7 +82,7 @@ export class PrismaJobRepository implements JobRepository {
   }
 
   async listByUserId(userId: string): Promise<JobRecord[]> {
-    const jobs = await prisma.job.findMany({
+    const jobs = await this.db.job.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
       select: jobSelect,
@@ -93,7 +92,7 @@ export class PrismaJobRepository implements JobRepository {
   }
 
   async updateStatus(id: string, status: JobStatus): Promise<void> {
-    await prisma.job.update({
+    await this.db.job.update({
       where: { id },
       data: { status },
       select: { id: true },
@@ -103,7 +102,7 @@ export class PrismaJobRepository implements JobRepository {
   async updateMatchResult(id: string, input: MatchWrite): Promise<JobRecord> {
     switch (input.status) {
       case "matched": {
-        const job = await prisma.job.update({
+        const job = await this.db.job.update({
           where: { id },
           data: {
             status: "matched",
@@ -116,7 +115,7 @@ export class PrismaJobRepository implements JobRepository {
         return mapJob(job);
       }
       case "failed": {
-        const job = await prisma.job.update({
+        const job = await this.db.job.update({
           where: { id },
           data: {
             status: "failed",
@@ -134,7 +133,7 @@ export class PrismaJobRepository implements JobRepository {
   }
 
   async deleteForUser(id: string, userId: string): Promise<boolean> {
-    const result = await prisma.job.deleteMany({
+    const result = await this.db.job.deleteMany({
       where: { id, userId },
     });
     return result.count > 0;

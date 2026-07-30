@@ -17,14 +17,16 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: pnpm
+
+      # setup:env must run before install: packages/database postinstall runs
+      # `prisma generate`, which requires DATABASE_URL from root `.env`.
+      - name: Setup env
+        run: pnpm setup:env
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Setup env
-        run: pnpm setup:env
 
       - name: Format check
         run: pnpm format:check
@@ -35,8 +37,17 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Test
-        run: pnpm test
+      - name: Test with coverage
+        run: |
+          set -o pipefail
+          pnpm test:coverage 2>&1 | tee coverage-output.txt
+          {
+            echo "## Unit test coverage"
+            echo ""
+            echo '```'
+            grep -A6 "Coverage summary" coverage-output.txt || echo "Coverage summary not found"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Build
         run: pnpm build

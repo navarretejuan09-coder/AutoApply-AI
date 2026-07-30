@@ -2,7 +2,7 @@ import { config } from "@autoapply/config";
 import type { ResumeDto } from "@autoapply/contracts";
 import { createLogger } from "@autoapply/logger";
 
-import { extractTextFromResume } from "./parser/extract-text.js";
+import { extractTextFromResume as defaultExtractTextFromResume } from "./parser/extract-text.js";
 import { extractSkills } from "./parser/extract-skills.js";
 import { summarizeText } from "./parser/summarize.js";
 import { PrismaResumeRepository } from "./repository/prisma-resume.repository.js";
@@ -15,10 +15,22 @@ import {
 const logger = createLogger("resume.domain");
 
 let repository: ResumeRepository = new PrismaResumeRepository();
+let extractTextFromResume = defaultExtractTextFromResume;
 
 /** Override repository (testing). */
 export function setResumeRepository(repo: ResumeRepository): void {
   repository = repo;
+}
+
+/** Override text extraction (testing). */
+export function setExtractTextFromResume(
+  fn: (content: Buffer, mimeType: string) => Promise<string>,
+): void {
+  extractTextFromResume = fn;
+}
+
+export function resetExtractTextFromResume(): void {
+  extractTextFromResume = defaultExtractTextFromResume;
 }
 
 export interface UploadResumeInput {

@@ -9,7 +9,7 @@
     "start": "node dist/main.js",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "test": "node --test",
+    "test": "tsx --test test/browser.test.ts",
     "smoke": "tsx src/smoke-playwright.ts"
   },
   "dependencies": {

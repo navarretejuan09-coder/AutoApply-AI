@@ -1,10 +1,13 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { getToken, type JWT } from "next-auth/jwt";
 import { config as appConfig } from "@autoapply/config";
 
-export async function middleware(request: NextRequest) {
-  const token = await getToken({
+/** Narrow injectable shape so tests can pass simple mocks without next-auth generics. */
+type GetTokenFn = (params: { req: NextRequest; secret: string }) => Promise<JWT | null>;
+
+export async function evaluateMiddleware(request: NextRequest, getTokenFn: GetTokenFn = getToken) {
+  const token = await getTokenFn({
     req: request,
     secret: appConfig.auth.secret,
   });
@@ -23,6 +26,10 @@ export async function middleware(request: NextRequest) {
   }
 
   return NextResponse.next();
+}
+
+export async function middleware(request: NextRequest) {
+  return evaluateMiddleware(request);
 }
 
 export const config = {

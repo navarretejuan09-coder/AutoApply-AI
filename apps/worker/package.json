@@ -9,7 +9,7 @@
     "start": "dotenv -e ../../.env -- node dist/main.js",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "test": "node --test"
+    "test": "tsx --test test/worker.test.ts"
   },
   "dependencies": {
     "@autoapply/config": "workspace:*",
