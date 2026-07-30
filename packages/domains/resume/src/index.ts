@@ -142,6 +142,30 @@ export async function getResumeForUser(
   return record ? toResumeDto(record) : null;
 }
 
+export interface ResumeMatchContext {
+  resumeId: string;
+  skills: string[];
+  summary: string;
+  extractedText: string;
+}
+
+/** Latest parsed resume fields needed for AI matching (includes extracted text). */
+export async function getLatestParsedResumeForMatching(
+  userId: string,
+): Promise<ResumeMatchContext | null> {
+  const record = await repository.findLatestParsedForUser(userId);
+  if (!record || !record.extractedText) {
+    return null;
+  }
+
+  return {
+    resumeId: record.id,
+    skills: record.skills,
+    summary: record.summary ?? "",
+    extractedText: record.extractedText,
+  };
+}
+
 export {
   SUPPORTED_RESUME_MIME_TYPES,
   type SupportedResumeMimeType,

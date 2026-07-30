@@ -1,6 +1,11 @@
 {
   "extends": "@autoapply/config/typescript/node.json",
-  "compilerOptions": { "outDir": "dist", "rootDir": "src", "composite": true },
+  "compilerOptions": { "outDir": "dist", "rootDir": "src", "composite": true, "types": ["node"] },
   "include": ["src"],
-  "references": [{ "path": "../logger" }]
+  "references": [
+    { "path": "../embeddings" },
+    { "path": "../llm" },
+    { "path": "../logger" },
+    { "path": "../prompts" }
+  ]
 }

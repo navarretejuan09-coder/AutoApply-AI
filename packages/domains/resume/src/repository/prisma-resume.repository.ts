@@ -98,6 +98,16 @@ export class PrismaResumeRepository implements ResumeRepository {
     return resume ? mapMetadata(resume) : null;
   }
 
+  async findLatestParsedForUser(userId: string): Promise<ResumeMetadata | null> {
+    const resume = await prisma.resume.findFirst({
+      where: { userId, status: "parsed" },
+      orderBy: { createdAt: "desc" },
+      select: metadataSelect,
+    });
+
+    return resume ? mapMetadata(resume) : null;
+  }
+
   async listByUserId(userId: string): Promise<ResumeMetadata[]> {
     const resumes = await prisma.resume.findMany({
       where: { userId },

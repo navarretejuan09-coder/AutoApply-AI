@@ -17,3 +17,13 @@ export interface ResumeParseJobData {
   correlationId: string;
   causationId: string;
 }
+
+export const JOB_QUEUE_NAME = "jobs" as const;
+export const JOB_MATCH_JOB_NAME = "job.match" as const;
+
+export interface JobMatchJobData {
+  jobId: string;
+  userId: string;
+  correlationId: string;
+  causationId: string;
+}

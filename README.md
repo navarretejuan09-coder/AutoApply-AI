@@ -39,7 +39,7 @@ pnpm dev
 | Browser  | http://localhost:3002/health | Plugin runtime stub (`/plugins` lists loaded providers) |
 | Postgres | localhost:5432               | Database                                                |
 | Redis    | localhost:6379               | BullMQ                                                  |
-| Ollama   | http://localhost:11434       | Local LLM (unused in M1)                                |
+| Ollama   | http://localhost:11434       | Local LLM + embeddings (M3)                             |
 
 ## Demo user (after seed)
 
@@ -66,13 +66,13 @@ packages/
   domains/
     user/    User domain + repository
     resume/  Resume upload, parse, skills (M2)
-    jobs/    stub
+    jobs/    Manual job paste + AI match (M3)
     applications/ stub
     analytics/ stub
     notifications/ stub
   plugins/
     linkedin/ greenhouse/ lever/ workday/  (stubs)
-  llm/ embeddings/ agents/ prompts/ ai/  (AI split, stubs)
+  llm/ embeddings/ agents/ prompts/ ai/  (Ollama-backed AI, M3)
   automation/  orchestration interfaces
   database/  Prisma schema and client
   auth/      Password hashing and JWT helpers
@@ -110,5 +110,16 @@ Platform scaffold: domain packages, contracts, events, correlation IDs, ConfigSe
 ## Milestone 2
 
 Resume upload (PDF/DOCX stored in Postgres), async parsing via BullMQ worker, deterministic skill extraction, and dashboard UI at `/dashboard/resumes`.
+
+## Milestone 3
+
+Ollama-backed AI packages (`llm`, `embeddings`, `agents`, `prompts`) plus manual job paste matching at `/dashboard/jobs`. Matching embeds the latest parsed resume against the pasted posting (cosine score) and asks the chat model for a short rationale.
+
+After `docker compose up -d`, pull models once:
+
+```bash
+docker exec -it autoapply-ollama ollama pull llama3.2
+docker exec -it autoapply-ollama ollama pull nomic-embed-text
+```
 
 See [docs/architecture.md](docs/architecture.md) for system design, dependency rules, and milestone mapping.

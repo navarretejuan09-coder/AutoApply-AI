@@ -1,10 +1,12 @@
 {
   "extends": "@autoapply/config/typescript/node.json",
-  "compilerOptions": { "outDir": "dist", "rootDir": "src", "composite": true },
+  "compilerOptions": { "outDir": "dist", "rootDir": "src", "composite": true, "types": ["node"] },
   "include": ["src"],
   "references": [
+    { "path": "../../agents" },
     { "path": "../../contracts" },
-    { "path": "../../events" },
-    { "path": "../../logger" }
+    { "path": "../../database" },
+    { "path": "../../logger" },
+    { "path": "../resume" }
   ]
 }

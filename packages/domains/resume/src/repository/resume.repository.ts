@@ -53,6 +53,7 @@ export interface ResumeRepository {
   create(input: CreateResumeInput): Promise<ResumeMetadata>;
   findBlobByIdForUser(id: string, userId: string): Promise<ResumeBlob | null>;
   findByIdForUser(id: string, userId: string): Promise<ResumeMetadata | null>;
+  findLatestParsedForUser(userId: string): Promise<ResumeMetadata | null>;
   listByUserId(userId: string): Promise<ResumeMetadata[]>;
   updateStatus(id: string, status: ResumeStatus): Promise<void>;
   updateParseResult(id: string, input: ParseWrite): Promise<ResumeMetadata>;

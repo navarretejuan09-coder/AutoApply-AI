@@ -14,6 +14,7 @@
   "dependencies": {
     "@autoapply/config": "workspace:*",
     "@autoapply/contracts": "workspace:*",
+    "@autoapply/jobs": "workspace:*",
     "@autoapply/logger": "workspace:*",
     "@autoapply/resume": "workspace:*",
     "bullmq": "^5.34.5",

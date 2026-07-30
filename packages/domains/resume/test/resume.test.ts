@@ -88,6 +88,15 @@ class InMemoryResumeRepository implements ResumeRepository {
     return record?.userId === userId ? this.toMetadata(record) : null;
   }
 
+  async findLatestParsedForUser(userId: string): Promise<ResumeMetadata | null> {
+    const parsed = [...this.records.values()]
+      .filter((record) => record.userId === userId && record.status === "parsed")
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+    const latest = parsed[0];
+    return latest ? this.toMetadata(latest) : null;
+  }
+
   async listByUserId(userId: string): Promise<ResumeMetadata[]> {
     return [...this.records.values()]
       .filter((record) => record.userId === userId)

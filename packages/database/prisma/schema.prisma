@@ -14,6 +14,13 @@ enum ResumeStatus {
   failed
 }
 
+enum JobStatus {
+  pending
+  matching
+  matched
+  failed
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -22,6 +29,7 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   resumes      Resume[]
+  jobs         Job[]
 }
 
 model Resume {
@@ -38,6 +46,25 @@ model Resume {
   errorMessage  String?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+model Job {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  company        String
+  url            String?
+  location       String?
+  description    String
+  status         JobStatus @default(pending)
+  matchScore     Float?
+  matchRationale String?
+  errorMessage   String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@index([userId, createdAt])
 }
