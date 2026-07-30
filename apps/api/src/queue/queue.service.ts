@@ -1,64 +1,73 @@
 import { Inject, Injectable, OnModuleDestroy } from "@nestjs/common";
 import {
   HEALTH_PING_JOB_NAME,
-  HEALTH_QUEUE_NAME,
   JOB_MATCH_JOB_NAME,
-  JOB_QUEUE_NAME,
   RESUME_PARSE_JOB_NAME,
-  RESUME_QUEUE_NAME,
   type HealthPingJobData,
   type JobMatchJobData,
   type ResumeParseJobData,
 } from "@autoapply/contracts";
-import { config } from "@autoapply/config";
 import { createLogger } from "@autoapply/logger";
-import { Queue } from "bullmq";
-import { Redis } from "ioredis";
 
 import { RequestContextService } from "../common/request-context.service.js";
 
+export const QUEUE_SERVICE_DEPS = Symbol("QUEUE_SERVICE_DEPS");
+
+export interface QueueConnection {
+  quit(): Promise<unknown>;
+}
+
+export interface EnqueuedJob {
+  id?: string;
+  name?: string;
+  queueName?: string;
+}
+
+export interface EnqueueableQueue<T> {
+  add(name: string, data: T): Promise<EnqueuedJob>;
+  close(): Promise<void>;
+}
+
 export interface QueueServiceDeps {
-  connection: Redis;
-  healthQueue: Queue<HealthPingJobData>;
-  resumeQueue: Queue<ResumeParseJobData>;
-  jobsQueue: Queue<JobMatchJobData>;
+  connection: QueueConnection;
+  healthQueue: EnqueueableQueue<HealthPingJobData>;
+  resumeQueue: EnqueueableQueue<ResumeParseJobData>;
+  jobsQueue: EnqueueableQueue<JobMatchJobData>;
+}
+
+export interface QueueInfrastructure {
+  createConnection: () => QueueConnection;
+  createHealthQueue: (connection: QueueConnection) => EnqueueableQueue<HealthPingJobData>;
+  createResumeQueue: (connection: QueueConnection) => EnqueueableQueue<ResumeParseJobData>;
+  createJobsQueue: (connection: QueueConnection) => EnqueueableQueue<JobMatchJobData>;
+}
+
+export function createQueueDeps(infrastructure: QueueInfrastructure): QueueServiceDeps {
+  const connection = infrastructure.createConnection();
+  return {
+    connection,
+    healthQueue: infrastructure.createHealthQueue(connection),
+    resumeQueue: infrastructure.createResumeQueue(connection),
+    jobsQueue: infrastructure.createJobsQueue(connection),
+  };
 }
 
 @Injectable()
 export class QueueService implements OnModuleDestroy {
   private readonly logger = createLogger("api.queue", { service: "api" });
-  private readonly connection: Redis;
-  private readonly healthQueue: Queue<HealthPingJobData>;
-  private readonly resumeQueue: Queue<ResumeParseJobData>;
-  private readonly jobsQueue: Queue<JobMatchJobData>;
+  private readonly connection: QueueConnection;
+  private readonly healthQueue: EnqueueableQueue<HealthPingJobData>;
+  private readonly resumeQueue: EnqueueableQueue<ResumeParseJobData>;
+  private readonly jobsQueue: EnqueueableQueue<JobMatchJobData>;
 
   constructor(
     @Inject(RequestContextService) private readonly requestContext: RequestContextService,
-    deps?: Partial<QueueServiceDeps>,
+    @Inject(QUEUE_SERVICE_DEPS) deps: QueueServiceDeps,
   ) {
-    this.connection =
-      deps?.connection ??
-      new Redis(config.redis.url, {
-        maxRetriesPerRequest: null,
-      });
-
-    this.healthQueue =
-      deps?.healthQueue ??
-      new Queue<HealthPingJobData>(HEALTH_QUEUE_NAME, {
-        connection: this.connection,
-      });
-
-    this.resumeQueue =
-      deps?.resumeQueue ??
-      new Queue<ResumeParseJobData>(RESUME_QUEUE_NAME, {
-        connection: this.connection,
-      });
-
-    this.jobsQueue =
-      deps?.jobsQueue ??
-      new Queue<JobMatchJobData>(JOB_QUEUE_NAME, {
-        connection: this.connection,
-      });
+    this.connection = deps.connection;
+    this.healthQueue = deps.healthQueue;
+    this.resumeQueue = deps.resumeQueue;
+    this.jobsQueue = deps.jobsQueue;
   }
 
   async enqueueHealthPing(source: string) {

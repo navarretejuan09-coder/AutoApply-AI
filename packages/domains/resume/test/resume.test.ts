@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
 
-import type { ResumeStatus } from "@autoapply/contracts";
 import { config } from "@autoapply/config";
 
 import { extractSkills } from "../src/parser/extract-skills.js";
@@ -12,145 +11,16 @@ import {
   getResumeForUser,
   listResumesByUser,
   parseResume,
-  resetExtractTextFromResume,
-  setExtractTextFromResume,
+  resetResumeRepository,
   setResumeRepository,
   uploadResume,
 } from "../src/index.js";
 import { toResumeDto } from "../src/repository/resume.repository.js";
-import type {
-  CreateResumeInput,
-  ParseWrite,
-  ResumeBlob,
-  ResumeMetadata,
-  ResumeRepository,
-} from "../src/repository/resume.repository.js";
-
-class InMemoryResumeRepository implements ResumeRepository {
-  private records = new Map<
-    string,
-    ResumeMetadata & {
-      content: Buffer;
-    }
-  >();
-
-  private toMetadata(
-    record: ResumeMetadata & {
-      content: Buffer;
-    },
-  ): ResumeMetadata {
-    return {
-      id: record.id,
-      userId: record.userId,
-      fileName: record.fileName,
-      mimeType: record.mimeType,
-      status: record.status,
-      extractedText: record.extractedText,
-      skills: record.skills,
-      summary: record.summary,
-      errorMessage: record.errorMessage,
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
-    };
-  }
-
-  async create(input: CreateResumeInput): Promise<ResumeMetadata> {
-    const now = new Date();
-    const record = {
-      id: `resume-${this.records.size + 1}`,
-      userId: input.userId,
-      fileName: input.fileName,
-      mimeType: input.mimeType,
-      content: input.content,
-      status: "pending" as const,
-      extractedText: null,
-      skills: [] as string[],
-      summary: null,
-      errorMessage: null,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    this.records.set(record.id, record);
-    return this.toMetadata(record);
-  }
-
-  async findBlobByIdForUser(id: string, userId: string): Promise<ResumeBlob | null> {
-    const record = this.records.get(id);
-    if (!record || record.userId !== userId) {
-      return null;
-    }
-
-    return {
-      id: record.id,
-      userId: record.userId,
-      mimeType: record.mimeType,
-      content: record.content,
-    };
-  }
-
-  async findByIdForUser(id: string, userId: string): Promise<ResumeMetadata | null> {
-    const record = this.records.get(id);
-    return record?.userId === userId ? this.toMetadata(record) : null;
-  }
-
-  async findLatestParsedForUser(userId: string): Promise<ResumeMetadata | null> {
-    const parsed = [...this.records.values()]
-      .filter((record) => record.userId === userId && record.status === "parsed")
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-
-    const latest = parsed[0];
-    return latest ? this.toMetadata(latest) : null;
-  }
-
-  async listByUserId(userId: string): Promise<ResumeMetadata[]> {
-    return [...this.records.values()]
-      .filter((record) => record.userId === userId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      .map((record) => this.toMetadata(record));
-  }
-
-  async updateStatus(id: string, status: ResumeStatus): Promise<void> {
-    const record = this.records.get(id);
-    if (!record) {
-      throw new Error(`Resume not found: ${id}`);
-    }
-
-    this.records.set(id, { ...record, status, updatedAt: new Date() });
-  }
-
-  async updateParseResult(id: string, input: ParseWrite): Promise<ResumeMetadata> {
-    const record = this.records.get(id);
-    if (!record) {
-      throw new Error(`Resume not found: ${id}`);
-    }
-
-    const updated =
-      input.status === "parsed"
-        ? {
-            ...record,
-            status: "parsed" as const,
-            extractedText: input.extractedText,
-            skills: input.skills,
-            summary: input.summary,
-            errorMessage: null,
-            updatedAt: new Date(),
-          }
-        : {
-            ...record,
-            status: "failed" as const,
-            errorMessage: input.errorMessage,
-            updatedAt: new Date(),
-          };
-
-    this.records.set(id, updated);
-    return this.toMetadata(updated);
-  }
-}
+import { InMemoryResumeRepository } from "../src/testing/in-memory-resume.repository.js";
 
 describe("resume domain", () => {
   afterEach(() => {
-    resetExtractTextFromResume();
+    resetResumeRepository();
   });
 
   it("uploadResume persists pending resume without content in DTO", async () => {
@@ -313,7 +183,6 @@ describe("resume domain", () => {
   it("parseResume succeeds when text extraction returns content", async () => {
     const repo = new InMemoryResumeRepository();
     setResumeRepository(repo);
-    setExtractTextFromResume(async () => "Senior TypeScript and React developer");
 
     const uploaded = await uploadResume({
       userId: "user-1",
@@ -322,10 +191,13 @@ describe("resume domain", () => {
       content: Buffer.from("pdf-bytes"),
     });
 
-    const parsed = await parseResume({
-      resumeId: uploaded.id,
-      userId: "user-1",
-    });
+    const parsed = await parseResume(
+      {
+        resumeId: uploaded.id,
+        userId: "user-1",
+      },
+      { extractText: async () => "Senior TypeScript and React developer" },
+    );
 
     assert.equal(parsed.resumeId, uploaded.id);
     assert.ok(parsed.skills.includes("TypeScript"));
@@ -335,7 +207,6 @@ describe("resume domain", () => {
   it("parseResume fails when extracted text is empty", async () => {
     const repo = new InMemoryResumeRepository();
     setResumeRepository(repo);
-    setExtractTextFromResume(async () => "");
 
     const uploaded = await uploadResume({
       userId: "user-1",
@@ -345,10 +216,13 @@ describe("resume domain", () => {
     });
 
     await assert.rejects(() =>
-      parseResume({
-        resumeId: uploaded.id,
-        userId: "user-1",
-      }),
+      parseResume(
+        {
+          resumeId: uploaded.id,
+          userId: "user-1",
+        },
+        { extractText: async () => "" },
+      ),
     );
 
     const record = await repo.findByIdForUser(uploaded.id, "user-1");

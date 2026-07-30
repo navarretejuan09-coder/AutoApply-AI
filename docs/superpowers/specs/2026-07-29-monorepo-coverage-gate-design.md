@@ -38,6 +38,8 @@ Local developers can still run `pnpm test` without the coverage gate; CI enforce
 - `**/.next/**`
 - Prisma generated client: `packages/database/src/generated/**`
 - Test files: `**/*.test.ts`
+- Test helpers shipped for package consumers: `**/testing/**`
+- Nest DI module wiring: `**/*.module.ts` (registration-only bootstrap)
 - Declaration files: `**/*.d.ts`
 - React/Next UI: `**/*.tsx` (requires a browser/DOM harness; unit gate covers `.ts` modules and web helpers such as `lib/api.ts`)
 - Optional bootstrap/config noise only if it skews the denominator without meaningful product logic (e.g. ESLint / Next / Tailwind config). Prefer minimal excludes.

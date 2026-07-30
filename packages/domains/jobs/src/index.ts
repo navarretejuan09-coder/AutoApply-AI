@@ -23,6 +23,10 @@ export function setJobRepository(repo: JobRepository): void {
   repository = repo;
 }
 
+export function resetJobRepository(): void {
+  repository = new PrismaJobRepository();
+}
+
 export function setResumeMatchLookup(
   lookup: (userId: string) => Promise<ResumeMatchContext | null>,
 ): void {

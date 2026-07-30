@@ -15,22 +15,18 @@ import {
 const logger = createLogger("resume.domain");
 
 let repository: ResumeRepository = new PrismaResumeRepository();
-let extractTextFromResume = defaultExtractTextFromResume;
 
 /** Override repository (testing). */
 export function setResumeRepository(repo: ResumeRepository): void {
   repository = repo;
 }
 
-/** Override text extraction (testing). */
-export function setExtractTextFromResume(
-  fn: (content: Buffer, mimeType: string) => Promise<string>,
-): void {
-  extractTextFromResume = fn;
+export function resetResumeRepository(): void {
+  repository = new PrismaResumeRepository();
 }
 
-export function resetExtractTextFromResume(): void {
-  extractTextFromResume = defaultExtractTextFromResume;
+export interface ParseResumeDeps {
+  extractText?: (content: Buffer, mimeType: string) => Promise<string>;
 }
 
 export interface UploadResumeInput {
@@ -86,7 +82,11 @@ export async function uploadResume(input: UploadResumeInput): Promise<ResumeDto>
   return toResumeDto(record);
 }
 
-export async function parseResume(input: ParseResumeInput): Promise<ParsedResume> {
+export async function parseResume(
+  input: ParseResumeInput,
+  deps: ParseResumeDeps = {},
+): Promise<ParsedResume> {
+  const extractText = deps.extractText ?? defaultExtractTextFromResume;
   const blob = await repository.findBlobByIdForUser(input.resumeId, input.userId);
 
   if (!blob) {
@@ -96,7 +96,7 @@ export async function parseResume(input: ParseResumeInput): Promise<ParsedResume
   await repository.updateStatus(input.resumeId, "processing");
 
   try {
-    const extractedText = await extractTextFromResume(blob.content, blob.mimeType);
+    const extractedText = await extractText(blob.content, blob.mimeType);
 
     if (!extractedText) {
       throw new Error("No text could be extracted from the resume");
