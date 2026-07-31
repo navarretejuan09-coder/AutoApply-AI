@@ -3,7 +3,6 @@ import type {
   ApplicationResult,
   JobBoardPlugin,
   PluginContext,
-  SearchCriteria,
 } from "@autoapply/contracts";
 import { createLogger } from "@autoapply/logger";
 
@@ -54,7 +53,7 @@ export function createLinkedInPlugin(): JobBoardPlugin {
       logger.info("LinkedIn session authenticated");
     },
 
-    search: async (_criteria: SearchCriteria) => {
+    search: async () => {
       throw new Error("Not implemented: linkedin.search");
     },
 
