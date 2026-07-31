@@ -186,14 +186,16 @@ describe("worker handlers", () => {
       }),
       markSubmitting: async () => {},
       markFailed: failedMock,
-    })(makeJob(APPLICATION_EXECUTE_JOB_NAME, {
-      applicationId: "app-1",
-      userId: "user-1",
-      jobId: "job-1",
-      provider: "linkedin",
-      correlationId: "c",
-      causationId: "c",
-    }));
+    })(
+      makeJob(APPLICATION_EXECUTE_JOB_NAME, {
+        applicationId: "app-1",
+        userId: "user-1",
+        jobId: "job-1",
+        provider: "linkedin",
+        correlationId: "c",
+        causationId: "c",
+      }),
+    );
 
     assert.equal(failedMock.mock.callCount(), 1);
   });
@@ -211,14 +213,16 @@ describe("worker handlers", () => {
       }),
       markSubmitting: async () => {},
       markFailed: failedMock,
-    })(makeJob(APPLICATION_EXECUTE_JOB_NAME, {
-      applicationId: "app-1",
-      userId: "user-1",
-      jobId: "job-1",
-      provider: "linkedin",
-      correlationId: "c",
-      causationId: "c",
-    }));
+    })(
+      makeJob(APPLICATION_EXECUTE_JOB_NAME, {
+        applicationId: "app-1",
+        userId: "user-1",
+        jobId: "job-1",
+        provider: "linkedin",
+        correlationId: "c",
+        causationId: "c",
+      }),
+    );
 
     assert.equal(failedMock.mock.callCount(), 1);
   });

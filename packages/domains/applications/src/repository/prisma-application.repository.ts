@@ -93,7 +93,10 @@ export class PrismaApplicationRepository implements ApplicationRepository {
     });
   }
 
-  async markSubmitted(id: string, externalApplicationId: string | null): Promise<ApplicationRecord> {
+  async markSubmitted(
+    id: string,
+    externalApplicationId: string | null,
+  ): Promise<ApplicationRecord> {
     const row = await prisma.application.update({
       where: { id },
       data: {

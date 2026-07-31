@@ -32,14 +32,14 @@ pnpm dev
 
 ## Services
 
-| Service  | URL                          | Description                                             |
-| -------- | ---------------------------- | ------------------------------------------------------- |
-| Web      | http://localhost:3000        | Next.js dashboard + Auth.js                             |
-| API      | http://localhost:3001/api    | NestJS REST gateway                                     |
+| Service  | URL                          | Description                                 |
+| -------- | ---------------------------- | ------------------------------------------- |
+| Web      | http://localhost:3000        | Next.js dashboard + Auth.js                 |
+| API      | http://localhost:3001/api    | NestJS REST gateway                         |
 | Browser  | http://localhost:3002/health | Playwright runtime (`/execute`, `/plugins`) |
-| Postgres | localhost:5432               | Database                                                |
-| Redis    | localhost:6379               | BullMQ                                                  |
-| Ollama   | http://localhost:11434       | Local LLM + embeddings (M3)                             |
+| Postgres | localhost:5432               | Database                                    |
+| Redis    | localhost:6379               | BullMQ                                      |
+| Ollama   | http://localhost:11434       | Local LLM + embeddings (M3)                 |
 
 ## Demo user (after seed)
 

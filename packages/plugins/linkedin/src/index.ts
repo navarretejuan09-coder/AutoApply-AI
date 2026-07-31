@@ -64,7 +64,10 @@ export function createLinkedInPlugin(): JobBoardPlugin {
       metadata: { provider: "linkedin" },
     }),
 
-    executeApplication: async (plan: ApplicationPlan, ctx: PluginContext): Promise<ApplicationResult> => {
+    executeApplication: async (
+      plan: ApplicationPlan,
+      ctx: PluginContext,
+    ): Promise<ApplicationResult> => {
       const jobUrl = jobUrlFromPlan(plan);
       await ctx.page.goto(jobUrl);
 

@@ -19,7 +19,11 @@ class FakePage implements BrowserPage {
   };
 
   click = async (selector: string): Promise<void> => {
-    if (selector.includes("easy-apply") && !selector.includes("submit") && !selector.includes("next")) {
+    if (
+      selector.includes("easy-apply") &&
+      !selector.includes("submit") &&
+      !selector.includes("next")
+    ) {
       return;
     }
   };

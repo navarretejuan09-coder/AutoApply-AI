@@ -63,7 +63,10 @@ export class InMemoryApplicationRepository implements ApplicationRepository {
     this.records.set(id, { ...record, status, updatedAt: new Date() });
   }
 
-  async markSubmitted(id: string, externalApplicationId: string | null): Promise<ApplicationRecord> {
+  async markSubmitted(
+    id: string,
+    externalApplicationId: string | null,
+  ): Promise<ApplicationRecord> {
     const record = this.records.get(id);
     if (!record) {
       throw new Error(`Application not found: ${id}`);

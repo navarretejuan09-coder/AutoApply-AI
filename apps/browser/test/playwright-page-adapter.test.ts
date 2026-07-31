@@ -31,11 +31,6 @@ describe("createPlaywrightBrowserPage", () => {
     assert.equal(adapted.url(), "https://example.com");
     await adapted.waitForSelector("#btn", { timeout: 1000 });
 
-    assert.deepEqual(calls, [
-      "goto:https://example.com",
-      "click:#btn",
-      "fill:#input:x",
-      "wait",
-    ]);
+    assert.deepEqual(calls, ["goto:https://example.com", "click:#btn", "fill:#input:x", "wait"]);
   });
 });

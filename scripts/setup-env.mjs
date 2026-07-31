@@ -85,7 +85,10 @@ if (cookieKey.length === 0) {
   const generated = randomBytes(32).toString("base64");
   values.set("COOKIE_ENCRYPTION_KEY", generated);
   if (/^COOKIE_ENCRYPTION_KEY=.*$/m.test(rootContent)) {
-    rootContent = rootContent.replace(/^COOKIE_ENCRYPTION_KEY=.*$/m, `COOKIE_ENCRYPTION_KEY=${generated}`);
+    rootContent = rootContent.replace(
+      /^COOKIE_ENCRYPTION_KEY=.*$/m,
+      `COOKIE_ENCRYPTION_KEY=${generated}`,
+    );
   } else {
     rootContent += `\nCOOKIE_ENCRYPTION_KEY=${generated}\n`;
   }
@@ -98,7 +101,10 @@ if (browserToken.length < 16) {
   const token = randomBytes(24).toString("base64url");
   values.set("BROWSER_INTERNAL_TOKEN", token);
   if (/^BROWSER_INTERNAL_TOKEN=.*$/m.test(rootContent)) {
-    rootContent = rootContent.replace(/^BROWSER_INTERNAL_TOKEN=.*$/m, `BROWSER_INTERNAL_TOKEN=${token}`);
+    rootContent = rootContent.replace(
+      /^BROWSER_INTERNAL_TOKEN=.*$/m,
+      `BROWSER_INTERNAL_TOKEN=${token}`,
+    );
   } else {
     rootContent += `\nBROWSER_INTERNAL_TOKEN=${token}\n`;
   }

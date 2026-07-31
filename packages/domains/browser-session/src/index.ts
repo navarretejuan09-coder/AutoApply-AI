@@ -52,10 +52,7 @@ export async function upsertBrowserSession(input: {
   };
 }
 
-export async function loadBrowserSession(
-  userId: string,
-  provider: string,
-): Promise<string | null> {
+export async function loadBrowserSession(userId: string, provider: string): Promise<string | null> {
   const record = await repository.findByUserAndProvider(userId, provider);
   return record?.storageStateJson ?? null;
 }

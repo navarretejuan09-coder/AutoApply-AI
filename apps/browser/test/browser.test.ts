@@ -7,7 +7,12 @@ process.env.BROWSER_URL ??= "http://localhost:3002";
 
 import "../src/load-env.js";
 
-import type { ApplicationPlan, ApplicationResult, JobBoardPlugin, PluginContext } from "@autoapply/contracts";
+import type {
+  ApplicationPlan,
+  ApplicationResult,
+  JobBoardPlugin,
+  PluginContext,
+} from "@autoapply/contracts";
 
 import { BrowserRuntime } from "../src/runtime/runtime.js";
 import { PluginManager } from "../src/runtime/plugin-manager.js";
@@ -29,7 +34,10 @@ class StubPlugin implements JobBoardPlugin {
     return { jobId, steps: [] };
   }
 
-  async executeApplication(_plan: ApplicationPlan, _ctx: PluginContext): Promise<ApplicationResult> {
+  async executeApplication(
+    _plan: ApplicationPlan,
+    _ctx: PluginContext,
+  ): Promise<ApplicationResult> {
     this.calls.push("executeApplication");
     return { success: true, applicationId: "ext-1" };
   }

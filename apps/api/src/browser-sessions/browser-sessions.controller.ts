@@ -1,9 +1,6 @@
 import { BadRequestException, Body, Controller, Get, Param, Put, UseGuards } from "@nestjs/common";
 import type { SessionPayload, UpsertBrowserSessionRequest } from "@autoapply/contracts";
-import {
-  getBrowserSessionStatus,
-  upsertBrowserSession,
-} from "@autoapply/browser-session";
+import { getBrowserSessionStatus, upsertBrowserSession } from "@autoapply/browser-session";
 
 import { CurrentUser } from "../auth/current-user.decorator.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";

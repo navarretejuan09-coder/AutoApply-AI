@@ -18,7 +18,9 @@ import { ApplicationsService } from "./applications.service.js";
 @Controller("applications")
 @UseGuards(JwtAuthGuard)
 export class ApplicationsController {
-  constructor(@Inject(ApplicationsService) private readonly applicationsService: ApplicationsService) {}
+  constructor(
+    @Inject(ApplicationsService) private readonly applicationsService: ApplicationsService,
+  ) {}
 
   @Post()
   async createApplication(

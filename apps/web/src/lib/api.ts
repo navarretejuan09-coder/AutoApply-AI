@@ -153,9 +153,7 @@ export async function createApplication(
   return response.json() as Promise<{ application: ApplicationDto; queueJobId: string }>;
 }
 
-export async function fetchApplications(
-  accessToken: string,
-): Promise<ListApplicationsResponse> {
+export async function fetchApplications(accessToken: string): Promise<ListApplicationsResponse> {
   const response = await fetch(`${getApiBaseUrl()}/api/applications`, {
     headers: buildHeaders(accessToken),
     cache: "no-store",

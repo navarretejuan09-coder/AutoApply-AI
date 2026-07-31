@@ -103,12 +103,7 @@ function JobCard({
             >
               Open posting
             </a>
-            <Button
-              variant="default"
-              size="sm"
-              disabled={applying}
-              onClick={() => onApply(job.id)}
-            >
+            <Button variant="default" size="sm" disabled={applying} onClick={() => onApply(job.id)}>
               {applying ? "Applying…" : "Apply on LinkedIn"}
             </Button>
           </>

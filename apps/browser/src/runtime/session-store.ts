@@ -1,4 +1,8 @@
-import { clearBrowserSession, loadBrowserSession, upsertBrowserSession } from "@autoapply/browser-session";
+import {
+  clearBrowserSession,
+  loadBrowserSession,
+  upsertBrowserSession,
+} from "@autoapply/browser-session";
 
 /** Local cache mirror of persisted encrypted sessions (plaintext JSON). */
 export interface BrowserSessionRecord {

@@ -52,7 +52,9 @@ export const browserEnvSchema = z.object({
     .enum(["true", "false"])
     .default("true")
     .transform((value) => value === "true"),
-  BROWSER_INTERNAL_TOKEN: z.string().min(16, "BROWSER_INTERNAL_TOKEN must be at least 16 characters"),
+  BROWSER_INTERNAL_TOKEN: z
+    .string()
+    .min(16, "BROWSER_INTERNAL_TOKEN must be at least 16 characters"),
 });
 
 const cookieKeyBase64 = z
