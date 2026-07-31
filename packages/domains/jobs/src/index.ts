@@ -1,9 +1,7 @@
 import {
-  runAgent,
+  createJobMatchAgent,
+  type JobMatchAgentInput,
   type JobMatchAgentResult,
-  type JobMatchDeps,
-  resetJobMatchDeps,
-  setJobMatchDeps,
 } from "@autoapply/agents";
 import type { JobDto } from "@autoapply/contracts";
 import { createLogger } from "@autoapply/logger";
@@ -14,35 +12,15 @@ import { type CreateJobInput, type JobRepository, toJobDto } from "./repository/
 
 const logger = createLogger("jobs.domain");
 
-let repository: JobRepository = new PrismaJobRepository();
-let resumeLookup: (userId: string) => Promise<ResumeMatchContext | null> =
-  getLatestParsedResumeForMatching;
-
-/** Override repository (testing). */
-export function setJobRepository(repo: JobRepository): void {
-  repository = repo;
+export interface JobsDomainDeps {
+  repository: JobRepository;
+  resumeLookup: (userId: string) => Promise<ResumeMatchContext | null>;
+  runJobMatch: (input: JobMatchAgentInput) => Promise<JobMatchAgentResult>;
 }
 
-export function resetJobRepository(): void {
-  repository = new PrismaJobRepository();
-}
-
-export function setResumeMatchLookup(
-  lookup: (userId: string) => Promise<ResumeMatchContext | null>,
-): void {
-  resumeLookup = lookup;
-}
-
-export function resetResumeMatchLookup(): void {
-  resumeLookup = getLatestParsedResumeForMatching;
-}
-
-export function setJobsAgentDeps(deps: Partial<JobMatchDeps>): void {
-  setJobMatchDeps(deps);
-}
-
-export function resetJobsAgentDeps(): void {
-  resetJobMatchDeps();
+export interface MatchJobInput {
+  jobId: string;
+  userId: string;
 }
 
 function requireNonEmpty(value: string, field: string): string {
@@ -53,123 +31,138 @@ function requireNonEmpty(value: string, field: string): string {
   return trimmed;
 }
 
-export async function createJob(input: CreateJobInput): Promise<JobDto> {
-  const title = requireNonEmpty(input.title, "title");
-  const company = requireNonEmpty(input.company, "company");
-  const description = requireNonEmpty(input.description, "description");
+export function createJobsDomain(deps: JobsDomainDeps) {
+  const { repository, resumeLookup, runJobMatch } = deps;
 
-  const record = await repository.create({
-    userId: input.userId,
-    title,
-    company,
-    description,
-    url: input.url?.trim() || null,
-    location: input.location?.trim() || null,
-  });
+  async function createJob(input: CreateJobInput): Promise<JobDto> {
+    const title = requireNonEmpty(input.title, "title");
+    const company = requireNonEmpty(input.company, "company");
+    const description = requireNonEmpty(input.description, "description");
 
-  logger.info("Job created", {
-    jobId: record.id,
-    userId: record.userId,
-    title: record.title,
-  });
+    const record = await repository.create({
+      userId: input.userId,
+      title,
+      company,
+      description,
+      url: input.url?.trim() || null,
+      location: input.location?.trim() || null,
+    });
 
-  return toJobDto(record);
-}
+    logger.info("Job created", {
+      jobId: record.id,
+      userId: record.userId,
+      title: record.title,
+    });
 
-export interface MatchJobInput {
-  jobId: string;
-  userId: string;
-}
-
-export async function matchJob(input: MatchJobInput): Promise<JobDto> {
-  const existing = await repository.findByIdForUser(input.jobId, input.userId);
-  if (!existing) {
-    throw new Error("Job not found");
+    return toJobDto(record);
   }
 
-  await repository.updateStatus(input.jobId, "matching");
-
-  try {
-    const resume = await resumeLookup(input.userId);
-    if (!resume) {
-      const updated = await repository.updateMatchResult(input.jobId, {
-        status: "failed",
-        errorMessage: "Upload and parse a resume before matching jobs",
-      });
-      return toJobDto(updated);
+  async function matchJob(input: MatchJobInput): Promise<JobDto> {
+    const existing = await repository.findByIdForUser(input.jobId, input.userId);
+    if (!existing) {
+      throw new Error("Job not found");
     }
 
-    const agentResult = (await runAgent("job-match", {
-      resumeText: resume.extractedText,
-      resumeSummary: resume.summary,
-      skills: resume.skills,
-      title: existing.title,
-      company: existing.company,
-      description: existing.description,
-    })) as JobMatchAgentResult;
+    await repository.updateStatus(input.jobId, "matching");
 
-    const updated = await repository.updateMatchResult(input.jobId, {
-      status: "matched",
-      matchScore: agentResult.score,
-      matchRationale: agentResult.rationale,
-    });
+    try {
+      const resume = await resumeLookup(input.userId);
+      if (!resume) {
+        const updated = await repository.updateMatchResult(input.jobId, {
+          status: "failed",
+          errorMessage: "Upload and parse a resume before matching jobs",
+        });
+        return toJobDto(updated);
+      }
 
-    logger.info("Job matched", {
-      jobId: updated.id,
-      userId: updated.userId,
-      score: updated.matchScore,
-      resumeId: resume.resumeId,
-    });
+      const agentResult = await runJobMatch({
+        resumeText: resume.extractedText,
+        resumeSummary: resume.summary,
+        skills: resume.skills,
+        title: existing.title,
+        company: existing.company,
+        description: existing.description,
+      });
 
-    return toJobDto(updated);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown match error";
+      const updated = await repository.updateMatchResult(input.jobId, {
+        status: "matched",
+        matchScore: agentResult.score,
+        matchRationale: agentResult.rationale,
+      });
 
-    const updated = await repository.updateMatchResult(input.jobId, {
+      logger.info("Job matched", {
+        jobId: updated.id,
+        userId: updated.userId,
+        score: updated.matchScore,
+        resumeId: resume.resumeId,
+      });
+
+      return toJobDto(updated);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown match error";
+
+      const updated = await repository.updateMatchResult(input.jobId, {
+        status: "failed",
+        errorMessage: message,
+      });
+
+      logger.error("Job match failed", {
+        jobId: input.jobId,
+        userId: input.userId,
+        error: message,
+      });
+
+      return toJobDto(updated);
+    }
+  }
+
+  async function listJobsByUser(userId: string): Promise<JobDto[]> {
+    const records = await repository.listByUserId(userId);
+    return records.map(toJobDto);
+  }
+
+  async function getJobForUser(jobId: string, userId: string): Promise<JobDto | null> {
+    const record = await repository.findByIdForUser(jobId, userId);
+    return record ? toJobDto(record) : null;
+  }
+
+  async function archiveJob(jobId: string, userId: string): Promise<boolean> {
+    const deleted = await repository.deleteForUser(jobId, userId);
+    if (deleted) {
+      logger.info("Job archived", { jobId, userId });
+    }
+    return deleted;
+  }
+
+  async function markJobFailed(jobId: string, errorMessage: string): Promise<JobDto> {
+    const updated = await repository.updateMatchResult(jobId, {
       status: "failed",
-      errorMessage: message,
+      errorMessage,
     });
-
-    logger.error("Job match failed", {
-      jobId: input.jobId,
-      userId: input.userId,
-      error: message,
-    });
-
     return toJobDto(updated);
   }
+
+  return {
+    createJob,
+    matchJob,
+    listJobsByUser,
+    getJobForUser,
+    archiveJob,
+    markJobFailed,
+  };
 }
 
-export async function listJobsByUser(userId: string): Promise<JobDto[]> {
-  const records = await repository.listByUserId(userId);
-  return records.map(toJobDto);
-}
+export type JobsDomain = ReturnType<typeof createJobsDomain>;
 
-export async function getJobForUser(jobId: string, userId: string): Promise<JobDto | null> {
-  const record = await repository.findByIdForUser(jobId, userId);
-  return record ? toJobDto(record) : null;
-}
+const production = createJobsDomain({
+  repository: new PrismaJobRepository(),
+  resumeLookup: getLatestParsedResumeForMatching,
+  runJobMatch: createJobMatchAgent(),
+});
 
-export async function archiveJob(jobId: string, userId: string): Promise<boolean> {
-  const deleted = await repository.deleteForUser(jobId, userId);
-  if (deleted) {
-    logger.info("Job archived", { jobId, userId });
-  }
-  return deleted;
-}
-
-export async function searchJobs(): Promise<never[]> {
-  return [];
-}
-
-export async function rankJob(jobId: string, userId: string): Promise<number> {
-  const matched = await matchJob({ jobId, userId });
-  if (matched.matchScore == null) {
-    throw new Error(matched.errorMessage ?? "Match failed");
-  }
-  return matched.matchScore;
-}
-
-export async function saveJob(): Promise<never> {
-  throw new Error("Not implemented: saveJob — use createJob");
-}
+export const createJob = production.createJob;
+export const matchJob = production.matchJob;
+export const listJobsByUser = production.listJobsByUser;
+export const getJobForUser = production.getJobForUser;
+export const archiveJob = production.archiveJob;
+export const markJobFailed = production.markJobFailed;

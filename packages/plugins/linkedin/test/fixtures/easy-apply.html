@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>LinkedIn Easy Apply Fixture</title>
+  </head>
+  <body>
+    <h1>Job posting</h1>
+    <button data-testid="easy-apply" type="button">Easy Apply</button>
+    <div id="modal" hidden>
+      <button data-testid="easy-apply-next" type="button">Next</button>
+      <button data-testid="easy-apply-submit" type="button">Submit</button>
+      <p data-testid="easy-apply-success">Application submitted</p>
+    </div>
+    <script>
+      document.querySelector("[data-testid='easy-apply']").addEventListener("click", () => {
+        document.getElementById("modal").hidden = false;
+      });
+    </script>
+  </body>
+</html>

@@ -29,6 +29,10 @@ const validEnv = {
   OLLAMA_CHAT_MODEL: "llama3.2",
   OLLAMA_EMBED_MODEL: "nomic-embed-text",
   BROWSER_PORT: "3002",
+  BROWSER_URL: "http://localhost:3002",
+  BROWSER_HEADLESS: "true",
+  BROWSER_INTERNAL_TOKEN: "browser-internal-token",
+  COOKIE_ENCRYPTION_KEY: Buffer.alloc(32, 1).toString("base64"),
   RESUME_MAX_BYTES: "5242880",
   NODE_ENV: "test",
 } as const;
@@ -108,9 +112,13 @@ describe("ollamaEnvSchema", () => {
 });
 
 describe("browserEnvSchema", () => {
-  it("defaults BROWSER_PORT", () => {
-    const parsed = parseEnv(browserEnvSchema, {});
+  it("defaults BROWSER_PORT and coerces headless", () => {
+    const parsed = parseEnv(browserEnvSchema, {
+      BROWSER_INTERNAL_TOKEN: "browser-internal-token",
+    });
     assert.equal(parsed.BROWSER_PORT, 3002);
+    assert.equal(parsed.BROWSER_URL, "http://localhost:3002");
+    assert.equal(parsed.BROWSER_HEADLESS, true);
   });
 });
 

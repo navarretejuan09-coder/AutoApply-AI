@@ -12,6 +12,8 @@ const validEnv = {
   API_URL: "http://localhost:3001",
   NEXTAUTH_URL: "http://localhost:3000",
   NEXT_PUBLIC_API_URL: "http://localhost:3001",
+  BROWSER_INTERNAL_TOKEN: "browser-internal-token",
+  COOKIE_ENCRYPTION_KEY: Buffer.alloc(32, 4).toString("base64"),
   NODE_ENV: "test",
 };
 
@@ -33,6 +35,7 @@ describe("sdk namespaces", () => {
     assert.equal(typeof sdk.resume, "object");
     assert.equal(typeof sdk.jobs, "object");
     assert.equal(typeof sdk.applications, "object");
+    assert.equal(typeof sdk.browserSession, "object");
     assert.equal(typeof sdk.analytics, "object");
     assert.equal(typeof sdk.notifications, "object");
     assert.equal(typeof sdk.automation, "object");

@@ -1,15 +1,25 @@
 import {
+  APPLICATION_EXECUTE_JOB_NAME,
   HEALTH_PING_JOB_NAME,
   JOB_MATCH_JOB_NAME,
   RESUME_PARSE_JOB_NAME,
+  type ApplicationExecuteJobData,
   type HealthPingJobData,
   type JobMatchJobData,
   type ResumeParseJobData,
 } from "@autoapply/contracts";
+import {
+  getApplicationExecutionContext,
+  markApplicationFailed,
+  markApplicationSubmitted,
+  markApplicationSubmitting,
+} from "@autoapply/applications";
 import { matchJob } from "@autoapply/jobs";
 import { createLogger } from "@autoapply/logger";
 import { parseResume } from "@autoapply/resume";
 import type { Job } from "bullmq";
+
+import { postBrowserExecute } from "./browser-client.js";
 
 const logger = createLogger("worker", { service: "worker" });
 
@@ -90,4 +100,71 @@ export function createJobMatchHandler(matchJobFn: typeof matchJob = matchJob) {
       score: matched.matchScore,
     });
   });
+}
+
+export function createApplicationExecuteHandler(
+  deps: {
+    executeOnBrowser?: typeof postBrowserExecute;
+    markSubmitting?: typeof markApplicationSubmitting;
+    getContext?: typeof getApplicationExecutionContext;
+    markSubmitted?: typeof markApplicationSubmitted;
+    markFailed?: typeof markApplicationFailed;
+  } = {},
+) {
+  const executeOnBrowser = deps.executeOnBrowser ?? postBrowserExecute;
+  const markSubmitting = deps.markSubmitting ?? markApplicationSubmitting;
+  const getContext = deps.getContext ?? getApplicationExecutionContext;
+  const markSubmitted = deps.markSubmitted ?? markApplicationSubmitted;
+  const markFailed = deps.markFailed ?? markApplicationFailed;
+
+  return createNamedHandler<ApplicationExecuteJobData>(
+    APPLICATION_EXECUTE_JOB_NAME,
+    async (job, jobLogger) => {
+      const { applicationId, userId, jobId, provider } = job.data;
+
+      jobLogger.info("Processing application execute", {
+        queueJobId: job.id,
+        applicationId,
+        userId,
+        jobId,
+        provider,
+      });
+
+      await markSubmitting(applicationId);
+
+      const context = await getContext(applicationId, userId);
+      if (!context) {
+        await markFailed(applicationId, "Application or job URL not found");
+        return;
+      }
+
+      try {
+        const { result } = await executeOnBrowser({
+          userId,
+          applicationId,
+          pluginName: provider,
+          plan: {
+            jobId,
+            steps: ["open_job", "easy_apply", "submit"],
+            metadata: { jobUrl: context.jobUrl },
+          },
+        });
+
+        if (result.success) {
+          await markSubmitted(applicationId, result.applicationId ?? null);
+          jobLogger.info("Application execute completed", {
+            applicationId,
+            externalApplicationId: result.applicationId,
+          });
+          return;
+        }
+
+        await markFailed(applicationId, result.error ?? "Application failed");
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Browser execution failed";
+        await markFailed(applicationId, message);
+        jobLogger.warn("Application execute error", { applicationId, message });
+      }
+    },
+  );
 }

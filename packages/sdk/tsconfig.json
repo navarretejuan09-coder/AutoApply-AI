@@ -7,6 +7,7 @@
     { "path": "../domains/resume" },
     { "path": "../domains/jobs" },
     { "path": "../domains/applications" },
+    { "path": "../domains/browser-session" },
     { "path": "../domains/analytics" },
     { "path": "../domains/notifications" },
     { "path": "../automation" },

@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 
-import { createJob, deleteJob, fetchJobs } from "@/lib/api";
+import { createJob, createApplication, deleteJob, fetchJobs } from "@/lib/api";
 
 function statusLabel(status: JobStatus): string {
   switch (status) {
@@ -49,11 +49,15 @@ function isInProgress(status: JobStatus): boolean {
 function JobCard({
   job,
   onDelete,
+  onApply,
   deleting,
+  applying,
 }: {
   job: JobDto;
   onDelete: (jobId: string) => void;
+  onApply: (jobId: string) => void;
   deleting: boolean;
+  applying: boolean;
 }) {
   return (
     <article className="rounded-lg border border-border/70 bg-background/80 p-5">
@@ -90,14 +94,19 @@ function JobCard({
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         {job.url ? (
-          <a
-            href={job.url}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm text-muted-foreground underline underline-offset-4"
-          >
-            Open posting
-          </a>
+          <>
+            <a
+              href={job.url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm text-muted-foreground underline underline-offset-4"
+            >
+              Open posting
+            </a>
+            <Button variant="default" size="sm" disabled={applying} onClick={() => onApply(job.id)}>
+              {applying ? "Applying…" : "Apply on LinkedIn"}
+            </Button>
+          </>
         ) : null}
         <Button variant="outline" size="sm" disabled={deleting} onClick={() => onDelete(job.id)}>
           Remove
@@ -150,6 +159,13 @@ export function JobsPanel() {
     mutationFn: (jobId: string) => deleteJob(accessToken ?? "", jobId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["jobs", accessToken] });
+    },
+  });
+
+  const applyMutation = useMutation({
+    mutationFn: (jobId: string) => createApplication(accessToken ?? "", jobId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["applications", accessToken] });
     },
   });
 
@@ -246,12 +262,26 @@ export function JobsPanel() {
         {!jobsQuery.isLoading && jobs.length === 0 ? (
           <p className="text-sm text-muted-foreground">No jobs added yet.</p>
         ) : null}
+        {applyMutation.isError ? (
+          <p className="text-sm text-destructive">
+            {applyMutation.error instanceof Error
+              ? applyMutation.error.message
+              : "Failed to queue application."}
+          </p>
+        ) : null}
+        {applyMutation.isSuccess ? (
+          <p className="text-sm text-muted-foreground">
+            Application queued (queue job {applyMutation.data.queueJobId}). See Applications.
+          </p>
+        ) : null}
         {jobs.map((job) => (
           <JobCard
             key={job.id}
             job={job}
             deleting={deleteMutation.isPending}
+            applying={applyMutation.isPending && applyMutation.variables === job.id}
             onDelete={(jobId) => deleteMutation.mutate(jobId)}
+            onApply={(jobId) => applyMutation.mutate(jobId)}
           />
         ))}
       </section>

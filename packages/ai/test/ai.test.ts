@@ -15,9 +15,8 @@ describe("ai barrel exports", () => {
   });
 
   it("re-exports agents namespace", () => {
-    assert.equal(typeof ai.agents.runAgent, "function");
-    assert.equal(typeof ai.agents.setJobMatchDeps, "function");
-    assert.equal(typeof ai.agents.resetJobMatchDeps, "function");
+    assert.equal(typeof ai.agents.runJobMatch, "function");
+    assert.equal(typeof ai.agents.createJobMatchAgent, "function");
   });
 
   it("re-exports prompts namespace", () => {

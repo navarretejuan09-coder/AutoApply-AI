@@ -1,40 +1,38 @@
 import assert from "node:assert/strict";
-import { afterEach, describe, it } from "node:test";
+import { describe, it } from "node:test";
 
-import {
-  archiveJob,
-  createJob,
-  getJobForUser,
-  listJobsByUser,
-  matchJob,
-  rankJob,
-  resetJobRepository,
-  resetJobsAgentDeps,
-  resetResumeMatchLookup,
-  saveJob,
-  searchJobs,
-  setJobRepository,
-  setJobsAgentDeps,
-  setResumeMatchLookup,
-} from "../src/index.js";
+import { createJobMatchAgent } from "@autoapply/agents";
+
+import { createJobsDomain } from "../src/index.js";
 import { InMemoryJobRepository } from "../src/testing/in-memory-job.repository.js";
 
-afterEach(() => {
-  resetJobRepository();
-  resetJobsAgentDeps();
-  resetResumeMatchLookup();
-});
+function createTestJobsDomain(options?: {
+  resumeLookup?: Parameters<typeof createJobsDomain>[0]["resumeLookup"];
+  agentDeps?: Parameters<typeof createJobMatchAgent>[0];
+}) {
+  return createJobsDomain({
+    repository: new InMemoryJobRepository(),
+    resumeLookup: options?.resumeLookup ?? (async () => null),
+    runJobMatch: createJobMatchAgent(
+      options?.agentDeps ?? {
+        embed: async () => [1, 0],
+        cosineSimilarity: () => 0.5,
+        chat: async () => "ok",
+      },
+    ),
+  });
+}
 
 describe("jobs domain", () => {
   it("createJob validates required fields and returns pending DTO", async () => {
-    setJobRepository(new InMemoryJobRepository());
+    const jobs = createTestJobsDomain();
 
     await assert.rejects(
-      () => createJob({ userId: "u1", title: " ", company: "Acme", description: "Role" }),
+      () => jobs.createJob({ userId: "u1", title: " ", company: "Acme", description: "Role" }),
       /title is required/,
     );
 
-    const job = await createJob({
+    const job = await jobs.createJob({
       userId: "u1",
       title: " Engineer ",
       company: " Acme ",
@@ -50,159 +48,129 @@ describe("jobs domain", () => {
   });
 
   it("matchJob fails when no parsed resume exists", async () => {
-    setJobRepository(new InMemoryJobRepository());
-    setResumeMatchLookup(async () => null);
+    const jobs = createTestJobsDomain({ resumeLookup: async () => null });
 
-    const job = await createJob({
+    const job = await jobs.createJob({
       userId: "u1",
       title: "Engineer",
       company: "Acme",
       description: "TypeScript role",
     });
 
-    const matched = await matchJob({ jobId: job.id, userId: "u1" });
+    const matched = await jobs.matchJob({ jobId: job.id, userId: "u1" });
     assert.equal(matched.status, "failed");
     assert.match(matched.errorMessage ?? "", /parse a resume/i);
   });
 
   it("matchJob stores score and rationale from the agent", async () => {
-    setJobRepository(new InMemoryJobRepository());
-    setResumeMatchLookup(async () => ({
-      resumeId: "resume-1",
-      skills: ["TypeScript", "NestJS"],
-      summary: "Backend engineer",
-      extractedText: "Built NestJS APIs in TypeScript",
-    }));
-    setJobsAgentDeps({
-      embed: async () => [1, 0],
-      cosineSimilarity: () => 0.91,
-      chat: async () => "Strong TypeScript overlap.",
+    const jobs = createTestJobsDomain({
+      resumeLookup: async () => ({
+        resumeId: "resume-1",
+        skills: ["TypeScript", "NestJS"],
+        summary: "Backend engineer",
+        extractedText: "Built NestJS APIs in TypeScript",
+      }),
+      agentDeps: {
+        embed: async () => [1, 0],
+        cosineSimilarity: () => 0.91,
+        chat: async () => "Strong TypeScript overlap.",
+      },
     });
 
-    const job = await createJob({
+    const job = await jobs.createJob({
       userId: "u1",
       title: "Engineer",
       company: "Acme",
       description: "TypeScript NestJS",
     });
 
-    const matched = await matchJob({ jobId: job.id, userId: "u1" });
+    const matched = await jobs.matchJob({ jobId: job.id, userId: "u1" });
     assert.equal(matched.status, "matched");
     assert.equal(matched.matchScore, 91);
     assert.equal(matched.matchRationale, "Strong TypeScript overlap.");
 
-    const listed = await listJobsByUser("u1");
+    const listed = await jobs.listJobsByUser("u1");
     assert.equal(listed.length, 1);
-    assert.equal(await getJobForUser(job.id, "u2"), null);
+    assert.equal(await jobs.getJobForUser(job.id, "u2"), null);
 
-    assert.equal(await archiveJob(job.id, "u1"), true);
-    assert.equal((await listJobsByUser("u1")).length, 0);
+    assert.equal(await jobs.archiveJob(job.id, "u1"), true);
+    assert.equal((await jobs.listJobsByUser("u1")).length, 0);
   });
 
   it("createJob validates company and description", async () => {
-    setJobRepository(new InMemoryJobRepository());
+    const jobs = createTestJobsDomain();
 
     await assert.rejects(
-      () => createJob({ userId: "u1", title: "Role", company: " ", description: "Desc" }),
+      () => jobs.createJob({ userId: "u1", title: "Role", company: " ", description: "Desc" }),
       /company is required/,
     );
     await assert.rejects(
-      () => createJob({ userId: "u1", title: "Role", company: "Acme", description: " " }),
+      () => jobs.createJob({ userId: "u1", title: "Role", company: "Acme", description: " " }),
       /description is required/,
     );
   });
 
   it("matchJob throws when job not found", async () => {
-    setJobRepository(new InMemoryJobRepository());
+    const jobs = createTestJobsDomain();
 
-    await assert.rejects(() => matchJob({ jobId: "missing", userId: "u1" }), /Job not found/);
+    await assert.rejects(() => jobs.matchJob({ jobId: "missing", userId: "u1" }), /Job not found/);
   });
 
   it("matchJob handles agent errors gracefully", async () => {
-    setJobRepository(new InMemoryJobRepository());
-    setResumeMatchLookup(async () => ({
-      resumeId: "resume-1",
-      skills: ["TypeScript"],
-      summary: "Engineer",
-      extractedText: "Built APIs",
-    }));
-    setJobsAgentDeps({
-      embed: async () => {
-        throw new Error("LLM unavailable");
+    const jobs = createTestJobsDomain({
+      resumeLookup: async () => ({
+        resumeId: "resume-1",
+        skills: ["TypeScript"],
+        summary: "Engineer",
+        extractedText: "Built APIs",
+      }),
+      agentDeps: {
+        embed: async () => {
+          throw new Error("LLM unavailable");
+        },
+        cosineSimilarity: () => 0.5,
+        chat: async () => "ignored",
       },
-      cosineSimilarity: () => 0.5,
-      chat: async () => "ignored",
     });
 
-    const job = await createJob({
+    const job = await jobs.createJob({
       userId: "u1",
       title: "Engineer",
       company: "Acme",
       description: "APIs",
     });
 
-    const matched = await matchJob({ jobId: job.id, userId: "u1" });
+    const matched = await jobs.matchJob({ jobId: job.id, userId: "u1" });
     assert.equal(matched.status, "failed");
     assert.match(matched.errorMessage ?? "", /LLM unavailable/);
   });
 
   it("archiveJob returns false for foreign user", async () => {
-    setJobRepository(new InMemoryJobRepository());
+    const jobs = createTestJobsDomain();
 
-    const job = await createJob({
+    const job = await jobs.createJob({
       userId: "u1",
       title: "Engineer",
       company: "Acme",
       description: "Role",
     });
 
-    assert.equal(await archiveJob(job.id, "u2"), false);
+    assert.equal(await jobs.archiveJob(job.id, "u2"), false);
   });
 
-  it("searchJobs returns empty list", async () => {
-    assert.deepEqual(await searchJobs(), []);
-  });
+  it("markJobFailed updates status", async () => {
+    const jobs = createTestJobsDomain();
 
-  it("rankJob returns score after successful match", async () => {
-    setJobRepository(new InMemoryJobRepository());
-    setResumeMatchLookup(async () => ({
-      resumeId: "resume-1",
-      skills: ["TypeScript"],
-      summary: "Engineer",
-      extractedText: "TypeScript developer",
-    }));
-    setJobsAgentDeps({
-      embed: async () => [1, 0],
-      cosineSimilarity: () => 0.85,
-      chat: async () => "Good fit.",
-    });
-
-    const job = await createJob({
-      userId: "u1",
-      title: "Engineer",
-      company: "Acme",
-      description: "TypeScript",
-    });
-
-    assert.equal(await rankJob(job.id, "u1"), 85);
-  });
-
-  it("rankJob throws when match fails", async () => {
-    setJobRepository(new InMemoryJobRepository());
-    setResumeMatchLookup(async () => null);
-
-    const job = await createJob({
+    const job = await jobs.createJob({
       userId: "u1",
       title: "Engineer",
       company: "Acme",
       description: "Role",
     });
 
-    await assert.rejects(() => rankJob(job.id, "u1"), /parse a resume/i);
-  });
-
-  it("saveJob is not implemented", async () => {
-    await assert.rejects(() => saveJob(), /Not implemented/);
+    const failed = await jobs.markJobFailed(job.id, "enqueue failed");
+    assert.equal(failed.status, "failed");
+    assert.equal(failed.errorMessage, "enqueue failed");
   });
 });
 

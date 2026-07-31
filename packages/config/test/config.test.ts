@@ -14,6 +14,10 @@ const validEnv = {
   NEXT_PUBLIC_API_URL: "http://localhost:3001",
   OLLAMA_HOST: "http://localhost:11434",
   BROWSER_PORT: "3002",
+  BROWSER_URL: "http://localhost:3002",
+  BROWSER_HEADLESS: "true",
+  BROWSER_INTERNAL_TOKEN: "browser-internal-token",
+  COOKIE_ENCRYPTION_KEY: Buffer.alloc(32, 1).toString("base64"),
   NODE_ENV: "test",
 } as const;
 
@@ -71,9 +75,19 @@ describe("ConfigService getters", () => {
     });
   });
 
-  it("reads browser port from env", () => {
+  it("reads browser settings from env", () => {
     applyValidEnv();
-    assert.deepEqual(config.browser, { port: 3002 });
+    assert.deepEqual(config.browser, {
+      port: 3002,
+      url: "http://localhost:3002",
+      headless: true,
+      internalToken: "browser-internal-token",
+    });
+  });
+
+  it("reads cookie encryption key from env", () => {
+    applyValidEnv();
+    assert.equal(config.cookieEncryption.key.length, 32);
   });
 
   it("reads resume max bytes default", () => {

@@ -1,26 +1,45 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
+process.env.BROWSER_INTERNAL_TOKEN ??= "browser-internal-token-for-tests";
+process.env.COOKIE_ENCRYPTION_KEY ??= Buffer.alloc(32, 2).toString("base64");
+process.env.BROWSER_URL ??= "http://localhost:3002";
+
 import "../src/load-env.js";
 
-import type { ApplicationPlan, JobBoardPlugin } from "@autoapply/contracts";
+import type {
+  ApplicationPlan,
+  ApplicationResult,
+  JobBoardPlugin,
+  PluginContext,
+} from "@autoapply/contracts";
 
 import { BrowserRuntime } from "../src/runtime/runtime.js";
 import { PluginManager } from "../src/runtime/plugin-manager.js";
-import {
-  InMemoryBrowserSessionStore,
-  PostgresBrowserSessionStore,
-} from "../src/runtime/session-store.js";
+import { InMemoryBrowserSessionStore } from "../src/runtime/session-store.js";
 
 class StubPlugin implements JobBoardPlugin {
+  readonly name = "test";
   readonly calls: string[] = [];
 
-  async authenticate(): Promise<void> {
+  async authenticate(_ctx: PluginContext): Promise<void> {
     this.calls.push("authenticate");
   }
 
-  async executeApplication(_plan: ApplicationPlan): Promise<void> {
+  async search(): Promise<never[]> {
+    return [];
+  }
+
+  async prepareApplication(jobId: string): Promise<ApplicationPlan> {
+    return { jobId, steps: [] };
+  }
+
+  async executeApplication(
+    _plan: ApplicationPlan,
+    _ctx: PluginContext,
+  ): Promise<ApplicationResult> {
     this.calls.push("executeApplication");
+    return { success: true, applicationId: "ext-1" };
   }
 }
 
@@ -45,25 +64,6 @@ describe("InMemoryBrowserSessionStore", () => {
   });
 });
 
-describe("PostgresBrowserSessionStore", () => {
-  it("throws not implemented for all methods", async () => {
-    const store = new PostgresBrowserSessionStore();
-
-    await assert.rejects(() => store.load("u1", "linkedin"), /Not implemented/);
-    await assert.rejects(
-      () =>
-        store.save({
-          userId: "u1",
-          provider: "linkedin",
-          cookies: "[]",
-          updatedAt: new Date().toISOString(),
-        }),
-      /Not implemented/,
-    );
-    await assert.rejects(() => store.clear("u1", "linkedin"), /Not implemented/);
-  });
-});
-
 describe("PluginManager", () => {
   it("lists known plugins and loads by name", () => {
     const manager = new PluginManager();
@@ -83,31 +83,111 @@ describe("PluginManager", () => {
 });
 
 describe("BrowserRuntime", () => {
-  it("runs plugin flow and persists session cookies", async () => {
+  it("returns error when no session is configured", async () => {
+    const runtime = new BrowserRuntime({ sessionStore: new InMemoryBrowserSessionStore() });
+    const result = await runtime.executeApplication({
+      userId: "u1",
+      pluginName: "linkedin",
+      plan: { jobId: "job-1", steps: ["easy_apply"], metadata: { jobUrl: "https://example.com" } },
+    });
+
+    assert.equal(result.success, false);
+    assert.match(result.error ?? "", /No browser session/);
+  });
+
+  it("runs plugin flow when launch succeeds", async () => {
     const store = new InMemoryBrowserSessionStore();
     const plugin = new StubPlugin();
     const manager = {
       load: () => plugin,
       list: () => ["test"],
     };
-    const runtime = new BrowserRuntime({ sessionStore: store, pluginManager: manager });
+
+    const runtime = new BrowserRuntime({
+      sessionStore: store,
+      pluginManager: manager,
+      saveEncryptedSession: async () => {},
+      launchBrowser: async () =>
+        ({
+          newContext: async () => ({
+            newPage: async () => ({
+              goto: async () => {},
+              click: async () => {},
+              fill: async () => {},
+              textContent: async () => null,
+              url: () => "https://www.linkedin.com/feed/",
+              waitForSelector: async () => {},
+            }),
+            storageState: async () => ({ cookies: [] }),
+          }),
+          close: async () => {},
+        }) as never,
+    });
 
     await store.save({
       userId: "u1",
       provider: "test",
-      cookies: "[existing]",
+      cookies: JSON.stringify({ cookies: [] }),
       updatedAt: new Date().toISOString(),
     });
 
-    await runtime.executeApplication({
+    const result = await runtime.executeApplication({
       userId: "u1",
       pluginName: "test",
-      plan: { jobId: "job-1", steps: ["fill-form"] },
+      plan: { jobId: "job-1", steps: ["fill-form"], metadata: { jobUrl: "https://example.com" } },
     });
 
     assert.deepEqual(plugin.calls, ["authenticate", "executeApplication"]);
+    assert.equal(result.success, true);
+  });
 
-    const saved = await store.load("u1", "test");
-    assert.equal(saved?.cookies, "[]");
+  it("returns failure when plugin throws", async () => {
+    const store = new InMemoryBrowserSessionStore();
+    const plugin: JobBoardPlugin = {
+      name: "bad",
+      authenticate: async () => {
+        throw new Error("auth boom");
+      },
+      search: async () => [],
+      prepareApplication: async (jobId) => ({ jobId, steps: [] }),
+      executeApplication: async () => ({ success: true }),
+    };
+    const manager = { load: () => plugin, list: () => ["bad"] };
+    const runtime = new BrowserRuntime({
+      sessionStore: store,
+      pluginManager: manager,
+      saveEncryptedSession: async () => {},
+      launchBrowser: async () =>
+        ({
+          newContext: async () => ({
+            newPage: async () => ({
+              goto: async () => {},
+              click: async () => {},
+              fill: async () => {},
+              textContent: async () => null,
+              url: () => "https://www.linkedin.com/feed/",
+              waitForSelector: async () => {},
+            }),
+            storageState: async () => ({ cookies: [] }),
+          }),
+          close: async () => {},
+        }) as never,
+    });
+
+    await store.save({
+      userId: "u1",
+      provider: "bad",
+      cookies: JSON.stringify({ cookies: [] }),
+      updatedAt: new Date().toISOString(),
+    });
+
+    const result = await runtime.executeApplication({
+      userId: "u1",
+      pluginName: "bad",
+      plan: { jobId: "job-1", steps: [], metadata: { jobUrl: "https://example.com" } },
+    });
+
+    assert.equal(result.success, false);
+    assert.match(result.error ?? "", /auth boom/);
   });
 });

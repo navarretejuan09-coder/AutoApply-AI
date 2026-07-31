@@ -1,4 +1,10 @@
-/** Encrypted cookie persistence (PostgreSQL) deferred to M4. */
+import {
+  clearBrowserSession,
+  loadBrowserSession,
+  upsertBrowserSession,
+} from "@autoapply/browser-session";
+
+/** Local cache mirror of persisted encrypted sessions (plaintext JSON). */
 export interface BrowserSessionRecord {
   userId: string;
   provider: string;
@@ -32,19 +38,29 @@ export class InMemoryBrowserSessionStore implements BrowserSessionStore {
   }
 }
 
-/** Placeholder for M4 Postgres-backed encrypted cookie storage. */
 export class PostgresBrowserSessionStore implements BrowserSessionStore {
   async load(userId: string, provider: string): Promise<BrowserSessionRecord | null> {
-    throw new Error(`Not implemented: PostgresBrowserSessionStore.load (${userId}, ${provider})`);
+    const storageStateJson = await loadBrowserSession(userId, provider);
+    if (!storageStateJson) {
+      return null;
+    }
+    return {
+      userId,
+      provider,
+      cookies: storageStateJson,
+      updatedAt: new Date().toISOString(),
+    };
   }
 
   async save(record: BrowserSessionRecord): Promise<void> {
-    throw new Error(
-      `Not implemented: PostgresBrowserSessionStore.save (${record.userId}, ${record.provider})`,
-    );
+    await upsertBrowserSession({
+      userId: record.userId,
+      provider: record.provider,
+      storageStateJson: record.cookies,
+    });
   }
 
   async clear(userId: string, provider: string): Promise<void> {
-    throw new Error(`Not implemented: PostgresBrowserSessionStore.clear (${userId}, ${provider})`);
+    await clearBrowserSession(userId, provider);
   }
 }

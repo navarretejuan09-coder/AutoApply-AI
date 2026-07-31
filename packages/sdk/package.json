@@ -23,6 +23,7 @@
     "@autoapply/resume": "workspace:*",
     "@autoapply/jobs": "workspace:*",
     "@autoapply/applications": "workspace:*",
+    "@autoapply/browser-session": "workspace:*",
     "@autoapply/analytics": "workspace:*",
     "@autoapply/notifications": "workspace:*",
     "@autoapply/automation": "workspace:*",

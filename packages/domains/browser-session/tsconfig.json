@@ -1,0 +1,10 @@
+{
+  "extends": "@autoapply/config/typescript/node.json",
+  "compilerOptions": { "outDir": "dist", "rootDir": "src", "composite": true, "types": ["node"] },
+  "include": ["src"],
+  "references": [
+    { "path": "../../config" },
+    { "path": "../../database" },
+    { "path": "../../logger" }
+  ]
+}

@@ -1,8 +1,10 @@
 import { Inject, Injectable, OnModuleDestroy } from "@nestjs/common";
 import {
+  APPLICATION_EXECUTE_JOB_NAME,
   HEALTH_PING_JOB_NAME,
   JOB_MATCH_JOB_NAME,
   RESUME_PARSE_JOB_NAME,
+  type ApplicationExecuteJobData,
   type HealthPingJobData,
   type JobMatchJobData,
   type ResumeParseJobData,
@@ -33,6 +35,7 @@ export interface QueueServiceDeps {
   healthQueue: EnqueueableQueue<HealthPingJobData>;
   resumeQueue: EnqueueableQueue<ResumeParseJobData>;
   jobsQueue: EnqueueableQueue<JobMatchJobData>;
+  applicationsQueue: EnqueueableQueue<ApplicationExecuteJobData>;
 }
 
 export interface QueueInfrastructure {
@@ -40,6 +43,9 @@ export interface QueueInfrastructure {
   createHealthQueue: (connection: QueueConnection) => EnqueueableQueue<HealthPingJobData>;
   createResumeQueue: (connection: QueueConnection) => EnqueueableQueue<ResumeParseJobData>;
   createJobsQueue: (connection: QueueConnection) => EnqueueableQueue<JobMatchJobData>;
+  createApplicationsQueue: (
+    connection: QueueConnection,
+  ) => EnqueueableQueue<ApplicationExecuteJobData>;
 }
 
 export function createQueueDeps(infrastructure: QueueInfrastructure): QueueServiceDeps {
@@ -49,6 +55,7 @@ export function createQueueDeps(infrastructure: QueueInfrastructure): QueueServi
     healthQueue: infrastructure.createHealthQueue(connection),
     resumeQueue: infrastructure.createResumeQueue(connection),
     jobsQueue: infrastructure.createJobsQueue(connection),
+    applicationsQueue: infrastructure.createApplicationsQueue(connection),
   };
 }
 
@@ -59,6 +66,7 @@ export class QueueService implements OnModuleDestroy {
   private readonly healthQueue: EnqueueableQueue<HealthPingJobData>;
   private readonly resumeQueue: EnqueueableQueue<ResumeParseJobData>;
   private readonly jobsQueue: EnqueueableQueue<JobMatchJobData>;
+  private readonly applicationsQueue: EnqueueableQueue<ApplicationExecuteJobData>;
 
   constructor(
     @Inject(RequestContextService) private readonly requestContext: RequestContextService,
@@ -68,6 +76,7 @@ export class QueueService implements OnModuleDestroy {
     this.healthQueue = deps.healthQueue;
     this.resumeQueue = deps.resumeQueue;
     this.jobsQueue = deps.jobsQueue;
+    this.applicationsQueue = deps.applicationsQueue;
   }
 
   async enqueueHealthPing(source: string) {
@@ -132,10 +141,39 @@ export class QueueService implements OnModuleDestroy {
     return job;
   }
 
+  async enqueueApplicationExecute(input: {
+    applicationId: string;
+    userId: string;
+    jobId: string;
+    provider: string;
+  }) {
+    const correlationId = this.requestContext.getCorrelationId() ?? crypto.randomUUID();
+
+    const job = await this.applicationsQueue.add(APPLICATION_EXECUTE_JOB_NAME, {
+      applicationId: input.applicationId,
+      userId: input.userId,
+      jobId: input.jobId,
+      provider: input.provider,
+      correlationId,
+      causationId: correlationId,
+    });
+
+    this.logger.info("Enqueued application execute", {
+      queueJobId: job.id,
+      applicationId: input.applicationId,
+      userId: input.userId,
+      correlationId,
+      causationId: job.id,
+    });
+
+    return job;
+  }
+
   async onModuleDestroy(): Promise<void> {
     await this.healthQueue.close();
     await this.resumeQueue.close();
     await this.jobsQueue.close();
+    await this.applicationsQueue.close();
     await this.connection.quit();
   }
 }

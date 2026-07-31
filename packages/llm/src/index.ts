@@ -49,4 +49,4 @@ export async function chat(messages: ChatMessage[], options: ChatOptions = {}): 
   return content;
 }
 
-export { OllamaError } from "./ollama-client.js";
+export { OllamaError, ollamaPost } from "./ollama-client.js";

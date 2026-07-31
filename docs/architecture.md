@@ -49,7 +49,7 @@ apps/browser
   └── runtime/
         ├── PluginManager      load("linkedin" | "greenhouse" | …)
         ├── BrowserRuntime     launch → load cookies → execute → save → close
-        └── BrowserSessionStore  in-memory stub; Postgres encrypted store in M4
+        └── BrowserSessionStore  Postgres encrypted store via `@autoapply/browser-session`
 ```
 
 Job-board logic lives in `packages/plugins/*`, not in `automation` or the browser service core.
@@ -68,11 +68,11 @@ packages/
     user/            UserRepository + createUser, verifyUserCredentials
     resume/          ResumeRepository + uploadResume, parseResume, list/get
     jobs/          createJob, matchJob (Ollama score + rationale)
-    applications/  stub
+    applications/  queueApplication, status transitions, list/get
     analytics/     stub
     notifications/ stub
   plugins/
-    linkedin/      stub JobBoardPlugin
+    linkedin/      LinkedIn Easy Apply plugin (M4)
     greenhouse/    stub
     lever/         stub
     workday/       stub
@@ -93,7 +93,7 @@ packages/
 | --------- | ------------------------------------------------------------------------------------------------------------------------- |
 | M2        | `@autoapply/resume` — upload (Postgres bytes), async BullMQ parse, deterministic PDF/DOCX skills extraction, dashboard UI |
 | M3        | `@autoapply/llm`, `embeddings`, `agents`, `prompts` — Ollama integration; manual job paste + AI match UI                  |
-| M4        | `@autoapply/plugin-linkedin`, browser cookie persistence, Playwright execution                                            |
+| M4        | `@autoapply/plugin-linkedin`, encrypted browser sessions, Playwright Easy Apply, applications API/UI                      |
 | M5        | `@autoapply/analytics`, `@autoapply/notifications`                                                                        |
 | M6        | Additional job board plugins                                                                                              |
 
@@ -105,7 +105,6 @@ To block merges when CI fails, enable a branch protection rule on `main` that re
 
 ## Explicit non-goals (M1.5)
 
-- Real resume/jobs/application workflows
-- Encrypted cookie storage (interface only)
+- Real resume/jobs/application workflows (M2–M4)
 - Distributed tracing, metrics, secrets manager
 - Event sourcing / outbox (envelope only; BullMQ remains transport)

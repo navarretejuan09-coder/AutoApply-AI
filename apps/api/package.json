@@ -12,8 +12,11 @@
     "test": "tsx --test test/api.test.ts"
   },
   "dependencies": {
+    "@autoapply/applications": "workspace:*",
     "@autoapply/auth": "workspace:*",
+    "@autoapply/browser-session": "workspace:*",
     "@autoapply/config": "workspace:*",
+    "@autoapply/browser-session": "workspace:*",
     "@autoapply/contracts": "workspace:*",
     "@autoapply/events": "workspace:*",
     "@autoapply/jobs": "workspace:*",

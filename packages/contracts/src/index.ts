@@ -7,9 +7,12 @@ export {
   JOB_QUEUE_NAME,
   RESUME_PARSE_JOB_NAME,
   RESUME_QUEUE_NAME,
+  APPLICATION_QUEUE_NAME,
+  APPLICATION_EXECUTE_JOB_NAME,
   type HealthPingJobData,
   type JobMatchJobData,
   type ResumeParseJobData,
+  type ApplicationExecuteJobData,
 } from "./dto/queue.js";
 export { JobQueueName, ServiceName } from "./dto/enums.js";
 export { CORRELATION_ID_HEADER } from "./dto/correlation.js";
@@ -24,8 +27,10 @@ export type {
 export type {
   ApplicationPlan,
   ApplicationResult,
+  BrowserPage,
   JobBoardPlugin,
   JobPosting,
+  PluginContext,
   SearchCriteria,
 } from "./plugins/job-board.js";
 export type { EnqueueHealthPingResponse, GetCurrentUserResponse } from "./api/users.js";
@@ -43,3 +48,17 @@ export type {
   JobStatus,
   ListJobsResponse,
 } from "./api/jobs.js";
+export type {
+  ApplicationDto,
+  ApplicationStatus,
+  CreateApplicationRequest,
+  CreateApplicationResponse,
+  GetApplicationResponse,
+  ListApplicationsResponse,
+} from "./api/applications.js";
+export type {
+  BrowserSessionStatusResponse,
+  UpsertBrowserSessionRequest,
+  UpsertBrowserSessionResponse,
+} from "./api/browser-sessions.js";
+export type { BrowserExecuteRequest, BrowserExecuteResponse } from "./api/browser-execute.js";

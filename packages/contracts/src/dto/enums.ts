@@ -9,4 +9,5 @@ export enum JobQueueName {
   Health = "health",
   Resume = "resume",
   Jobs = "jobs",
+  Applications = "applications",
 }

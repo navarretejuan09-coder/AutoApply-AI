@@ -9,9 +9,10 @@
     "start": "dotenv -e ../../.env -- node dist/main.js",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test test/worker.test.ts"
+    "test": "tsx --test test/worker.test.ts test/browser-client.test.ts"
   },
   "dependencies": {
+    "@autoapply/applications": "workspace:*",
     "@autoapply/config": "workspace:*",
     "@autoapply/contracts": "workspace:*",
     "@autoapply/jobs": "workspace:*",

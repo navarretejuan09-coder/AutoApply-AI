@@ -4,15 +4,35 @@ import { createServer } from "node:http";
 
 import { config } from "@autoapply/config";
 import { createLogger } from "@autoapply/logger";
-import type { HealthCheckResponse } from "@autoapply/contracts";
+import type { BrowserExecuteRequest, HealthCheckResponse } from "@autoapply/contracts";
 
+import { BrowserRuntime } from "./runtime/runtime.js";
 import { pluginManager } from "./runtime/index.js";
+import { PostgresBrowserSessionStore } from "./runtime/session-store.js";
 
 const logger = createLogger("browser", { service: "browser" });
 const port = config.browser.port;
 
-const server = createServer((request, response) => {
-  if (request.url === "/health") {
+const browserRuntime = new BrowserRuntime({
+  sessionStore: new PostgresBrowserSessionStore(),
+});
+
+async function readJsonBody<T>(request: import("node:http").IncomingMessage): Promise<T> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of request) {
+    chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+  }
+  const raw = Buffer.concat(chunks).toString("utf8");
+  return JSON.parse(raw) as T;
+}
+
+function isAuthorized(request: import("node:http").IncomingMessage): boolean {
+  const token = request.headers["x-browser-internal-token"];
+  return token === config.browser.internalToken;
+}
+
+const server = createServer(async (request, response) => {
+  if (request.url === "/health" && request.method === "GET") {
     const payload: HealthCheckResponse = {
       status: "ok",
       service: "browser",
@@ -24,9 +44,34 @@ const server = createServer((request, response) => {
     return;
   }
 
-  if (request.url === "/plugins") {
+  if (request.url === "/plugins" && request.method === "GET") {
     response.writeHead(200, { "Content-Type": "application/json" });
     response.end(JSON.stringify({ plugins: pluginManager.list() }));
+    return;
+  }
+
+  if (request.url === "/execute" && request.method === "POST") {
+    if (!isAuthorized(request)) {
+      response.writeHead(401, { "Content-Type": "application/json" });
+      response.end(JSON.stringify({ error: "Unauthorized" }));
+      return;
+    }
+
+    try {
+      const body = await readJsonBody<BrowserExecuteRequest>(request);
+      const result = await browserRuntime.executeApplication({
+        userId: body.userId,
+        pluginName: body.pluginName,
+        plan: body.plan,
+      });
+
+      response.writeHead(200, { "Content-Type": "application/json" });
+      response.end(JSON.stringify({ result }));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Execute failed";
+      response.writeHead(400, { "Content-Type": "application/json" });
+      response.end(JSON.stringify({ error: message }));
+    }
     return;
   }
 

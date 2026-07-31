@@ -27,3 +27,15 @@ export interface JobMatchJobData {
   correlationId: string;
   causationId: string;
 }
+
+export const APPLICATION_QUEUE_NAME = "applications" as const;
+export const APPLICATION_EXECUTE_JOB_NAME = "application.execute" as const;
+
+export interface ApplicationExecuteJobData {
+  applicationId: string;
+  userId: string;
+  jobId: string;
+  provider: string;
+  correlationId: string;
+  causationId: string;
+}

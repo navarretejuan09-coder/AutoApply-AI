@@ -1,7 +1,19 @@
 import assert from "node:assert/strict";
 import { afterEach, describe, it, mock } from "node:test";
 
-import type { JobBoardPlugin } from "../plugins/job-board.js";
+import type { BrowserPage, JobBoardPlugin, PluginContext } from "../plugins/job-board.js";
+
+function mockContext(): PluginContext {
+  const page: BrowserPage = {
+    goto: async () => {},
+    click: async () => {},
+    fill: async () => {},
+    textContent: async () => null,
+    url: () => "https://example.com",
+    waitForSelector: async () => {},
+  };
+  return { page };
+}
 
 export function assertNotImplementedPlugin(createPlugin: () => JobBoardPlugin, name: string): void {
   const suiteName = `create${name.charAt(0).toUpperCase()}${name.slice(1)}Plugin`;
@@ -20,7 +32,7 @@ export function assertNotImplementedPlugin(createPlugin: () => JobBoardPlugin, n
       mock.method(console, "warn", () => {});
       const plugin = createPlugin();
       await assert.rejects(
-        () => plugin.authenticate(),
+        () => plugin.authenticate(mockContext()),
         new RegExp(`Not implemented: ${name}\\.authenticate`),
       );
     });
@@ -47,7 +59,7 @@ export function assertNotImplementedPlugin(createPlugin: () => JobBoardPlugin, n
       mock.method(console, "warn", () => {});
       const plugin = createPlugin();
       await assert.rejects(
-        () => plugin.executeApplication({ jobId: "job-1", steps: [] }),
+        () => plugin.executeApplication({ jobId: "job-1", steps: [] }, mockContext()),
         new RegExp(`Not implemented: ${name}\\.executeApplication`),
       );
     });

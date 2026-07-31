@@ -1,9 +1,11 @@
 import "./load-env.js";
 
 import {
+  APPLICATION_QUEUE_NAME,
   HEALTH_QUEUE_NAME,
   JOB_QUEUE_NAME,
   RESUME_QUEUE_NAME,
+  type ApplicationExecuteJobData,
   type HealthPingJobData,
   type JobMatchJobData,
   type ResumeParseJobData,
@@ -14,6 +16,7 @@ import { Worker } from "bullmq";
 import { Redis } from "ioredis";
 
 import {
+  createApplicationExecuteHandler,
   createHealthPingHandler,
   createJobMatchHandler,
   createResumeParseHandler,
@@ -39,7 +42,13 @@ const jobsWorker = new Worker<JobMatchJobData>(JOB_QUEUE_NAME, createJobMatchHan
   connection,
 });
 
-for (const worker of [healthWorker, resumeWorker, jobsWorker]) {
+const applicationsWorker = new Worker<ApplicationExecuteJobData>(
+  APPLICATION_QUEUE_NAME,
+  createApplicationExecuteHandler(),
+  { connection },
+);
+
+for (const worker of [healthWorker, resumeWorker, jobsWorker, applicationsWorker]) {
   worker.on("failed", (job, error) => {
     logger.error("Job failed", {
       queue: worker.name,
@@ -51,7 +60,7 @@ for (const worker of [healthWorker, resumeWorker, jobsWorker]) {
 }
 
 logger.info("Worker started", {
-  queues: [HEALTH_QUEUE_NAME, RESUME_QUEUE_NAME, JOB_QUEUE_NAME],
+  queues: [HEALTH_QUEUE_NAME, RESUME_QUEUE_NAME, JOB_QUEUE_NAME, APPLICATION_QUEUE_NAME],
 });
 
 async function shutdown(): Promise<void> {
@@ -59,6 +68,7 @@ async function shutdown(): Promise<void> {
   await healthWorker.close();
   await resumeWorker.close();
   await jobsWorker.close();
+  await applicationsWorker.close();
   await connection.quit();
   process.exit(0);
 }

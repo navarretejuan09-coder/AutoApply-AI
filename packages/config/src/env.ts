@@ -47,6 +47,30 @@ export const ollamaEnvSchema = z.object({
 
 export const browserEnvSchema = z.object({
   BROWSER_PORT: z.coerce.number().int().positive().default(3002),
+  BROWSER_URL: z.string().url("BROWSER_URL must be a valid URL").default("http://localhost:3002"),
+  BROWSER_HEADLESS: z
+    .enum(["true", "false"])
+    .default("true")
+    .transform((value) => value === "true"),
+  BROWSER_INTERNAL_TOKEN: z
+    .string()
+    .min(16, "BROWSER_INTERNAL_TOKEN must be at least 16 characters"),
+});
+
+const cookieKeyBase64 = z
+  .string()
+  .min(1, "COOKIE_ENCRYPTION_KEY is required")
+  .refine((value) => {
+    try {
+      const buf = Buffer.from(value, "base64");
+      return buf.length === 32;
+    } catch {
+      return false;
+    }
+  }, "COOKIE_ENCRYPTION_KEY must be base64-encoded 32 bytes");
+
+export const cookieEncryptionEnvSchema = z.object({
+  COOKIE_ENCRYPTION_KEY: cookieKeyBase64,
 });
 
 export const resumeEnvSchema = z.object({
@@ -63,6 +87,7 @@ export const baseEnvSchema = databaseEnvSchema
   .merge(apiEnvSchema)
   .merge(ollamaEnvSchema)
   .merge(browserEnvSchema)
+  .merge(cookieEncryptionEnvSchema)
   .merge(resumeEnvSchema)
   .merge(nodeEnvSchema);
 
@@ -72,6 +97,7 @@ export type AuthEnv = z.infer<typeof authEnvSchema>;
 export type ApiEnv = z.infer<typeof apiEnvSchema>;
 export type WebEnv = z.infer<typeof webEnvSchema>;
 export type BrowserEnv = z.infer<typeof browserEnvSchema>;
+export type CookieEncryptionEnv = z.infer<typeof cookieEncryptionEnvSchema>;
 export type ResumeEnv = z.infer<typeof resumeEnvSchema>;
 export type NodeEnv = z.infer<typeof nodeEnvSchema>;
 export type OllamaEnv = z.infer<typeof ollamaEnvSchema>;

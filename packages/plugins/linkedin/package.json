@@ -16,7 +16,7 @@
     "dev": "tsc -p tsconfig.json --watch",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test test/linkedin.test.ts"
+    "test": "tsx --test test/linkedin.test.ts test/linkedin-errors.test.ts"
   },
   "dependencies": {
     "@autoapply/contracts": "workspace:*",

@@ -26,10 +26,23 @@ export interface ApplicationResult {
   error?: string;
 }
 
+export interface BrowserPage {
+  goto(url: string): Promise<void>;
+  click(selector: string): Promise<void>;
+  fill(selector: string, value: string): Promise<void>;
+  textContent(selector: string): Promise<string | null>;
+  url(): string;
+  waitForSelector(selector: string, options?: { timeout?: number }): Promise<void>;
+}
+
+export interface PluginContext {
+  page: BrowserPage;
+}
+
 export interface JobBoardPlugin {
   readonly name: string;
-  authenticate(): Promise<void>;
-  search(criteria: SearchCriteria): Promise<JobPosting[]>;
-  prepareApplication(jobId: string): Promise<ApplicationPlan>;
-  executeApplication(plan: ApplicationPlan): Promise<ApplicationResult>;
+  authenticate(ctx: PluginContext): Promise<void>;
+  search(criteria: SearchCriteria, ctx?: PluginContext): Promise<JobPosting[]>;
+  prepareApplication(jobId: string, ctx?: PluginContext): Promise<ApplicationPlan>;
+  executeApplication(plan: ApplicationPlan, ctx: PluginContext): Promise<ApplicationResult>;
 }
