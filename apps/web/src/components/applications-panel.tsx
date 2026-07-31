@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@autoapply/ui";
 import type { ApplicationDto, ApplicationStatus } from "@autoapply/contracts";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";

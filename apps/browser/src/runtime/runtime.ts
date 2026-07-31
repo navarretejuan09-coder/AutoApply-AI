@@ -1,9 +1,4 @@
-import type {
-  ApplicationPlan,
-  ApplicationResult,
-  JobBoardPlugin,
-  PluginContext,
-} from "@autoapply/contracts";
+import type { ApplicationPlan, ApplicationResult, PluginContext } from "@autoapply/contracts";
 import { upsertBrowserSession } from "@autoapply/browser-session";
 import { createLogger } from "@autoapply/logger";
 import { chromium, type Browser } from "playwright";

@@ -1,7 +1,6 @@
 import { Inject, Injectable, OnModuleDestroy } from "@nestjs/common";
 import {
   APPLICATION_EXECUTE_JOB_NAME,
-  APPLICATION_QUEUE_NAME,
   HEALTH_PING_JOB_NAME,
   JOB_MATCH_JOB_NAME,
   RESUME_PARSE_JOB_NAME,
