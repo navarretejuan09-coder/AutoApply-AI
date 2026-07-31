@@ -21,15 +21,24 @@ enum JobStatus {
   failed
 }
 
+enum ApplicationStatus {
+  queued
+  submitting
+  submitted
+  failed
+}
+
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  resumes      Resume[]
-  jobs         Job[]
+  id              String           @id @default(cuid())
+  email           String           @unique
+  passwordHash    String
+  name            String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  resumes         Resume[]
+  jobs            Job[]
+  applications    Application[]
+  browserSessions BrowserSession[]
 }
 
 model Resume {
@@ -51,20 +60,51 @@ model Resume {
 }
 
 model Job {
-  id             String    @id @default(cuid())
+  id             String        @id @default(cuid())
   userId         String
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   title          String
   company        String
   url            String?
   location       String?
   description    String
-  status         JobStatus @default(pending)
+  status         JobStatus     @default(pending)
   matchScore     Float?
   matchRationale String?
   errorMessage   String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  applications   Application[]
 
   @@index([userId, createdAt])
+}
+
+model Application {
+  id                    String            @id @default(cuid())
+  userId                String
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId                 String
+  job                   Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  provider              String            @default("linkedin")
+  status                ApplicationStatus @default(queued)
+  externalApplicationId String?
+  errorMessage          String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  @@unique([userId, jobId, provider])
+  @@index([userId, createdAt])
+}
+
+model BrowserSession {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider         String
+  encryptedCookies Bytes
+  iv               Bytes
+  authTag          Bytes
+  updatedAt        DateTime @updatedAt
+
+  @@unique([userId, provider])
 }

@@ -4,7 +4,9 @@
   "include": ["src"],
   "references": [
     { "path": "../../contracts" },
+    { "path": "../../database" },
     { "path": "../../events" },
+    { "path": "../jobs" },
     { "path": "../../logger" }
   ]
 }

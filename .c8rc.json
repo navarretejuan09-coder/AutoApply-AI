@@ -14,7 +14,10 @@
     "**/eslint.config.*",
     "**/next.config.*",
     "**/tailwind.config.*",
-    "**/postcss.config.*"
+    "**/postcss.config.*",
+    "apps/*/src/main.ts",
+    "apps/*/src/load-env.ts",
+    "apps/browser/src/smoke-playwright.ts"
   ],
   "reporter": ["text", "text-summary"],
   "check-coverage": true,

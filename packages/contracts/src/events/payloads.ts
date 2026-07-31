@@ -23,7 +23,7 @@ export interface ApplicationSubmittedPayload {
   applicationId: string;
   jobId: string;
   userId: string;
-  status: "queued" | "submitted" | "failed";
+  status: "queued" | "submitting" | "submitted" | "failed";
 }
 
 export interface UserRegisteredPayload {

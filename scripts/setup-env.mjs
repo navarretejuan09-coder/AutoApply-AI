@@ -80,5 +80,31 @@ if (currentSecret.length < 32) {
   console.log("AUTH_SECRET already set in .env");
 }
 
+const cookieKey = values.get("COOKIE_ENCRYPTION_KEY")?.trim() ?? "";
+if (cookieKey.length === 0) {
+  const generated = randomBytes(32).toString("base64");
+  values.set("COOKIE_ENCRYPTION_KEY", generated);
+  if (/^COOKIE_ENCRYPTION_KEY=.*$/m.test(rootContent)) {
+    rootContent = rootContent.replace(/^COOKIE_ENCRYPTION_KEY=.*$/m, `COOKIE_ENCRYPTION_KEY=${generated}`);
+  } else {
+    rootContent += `\nCOOKIE_ENCRYPTION_KEY=${generated}\n`;
+  }
+  writeFileSync(envPath, rootContent);
+  console.log("Generated COOKIE_ENCRYPTION_KEY in .env");
+}
+
+const browserToken = values.get("BROWSER_INTERNAL_TOKEN")?.trim() ?? "";
+if (browserToken.length < 16) {
+  const token = randomBytes(24).toString("base64url");
+  values.set("BROWSER_INTERNAL_TOKEN", token);
+  if (/^BROWSER_INTERNAL_TOKEN=.*$/m.test(rootContent)) {
+    rootContent = rootContent.replace(/^BROWSER_INTERNAL_TOKEN=.*$/m, `BROWSER_INTERNAL_TOKEN=${token}`);
+  } else {
+    rootContent += `\nBROWSER_INTERNAL_TOKEN=${token}\n`;
+  }
+  writeFileSync(envPath, rootContent);
+  console.log("Generated BROWSER_INTERNAL_TOKEN in .env");
+}
+
 writeFileSync(webEnvPath, serializeEnv(values, WEB_ENV_KEYS));
 console.log("Synced apps/web/.env.local");

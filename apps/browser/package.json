@@ -9,10 +9,11 @@
     "start": "node dist/main.js",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test test/browser.test.ts",
+    "test": "tsx --test test/browser.test.ts test/playwright-page-adapter.test.ts",
     "smoke": "tsx src/smoke-playwright.ts"
   },
   "dependencies": {
+    "@autoapply/browser-session": "workspace:*",
     "@autoapply/config": "workspace:*",
     "@autoapply/contracts": "workspace:*",
     "@autoapply/logger": "workspace:*",
@@ -20,11 +21,11 @@
     "@autoapply/plugin-lever": "workspace:*",
     "@autoapply/plugin-linkedin": "workspace:*",
     "@autoapply/plugin-workday": "workspace:*",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "playwright": "^1.49.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
-    "playwright": "^1.49.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }

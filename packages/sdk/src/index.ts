@@ -1,6 +1,7 @@
 import * as user from "@autoapply/user";
 import * as resume from "@autoapply/resume";
 import * as jobs from "@autoapply/jobs";
+import * as browserSession from "@autoapply/browser-session";
 import * as applications from "@autoapply/applications";
 import * as analytics from "@autoapply/analytics";
 import * as notifications from "@autoapply/notifications";
@@ -15,6 +16,7 @@ export const sdk = {
   resume,
   jobs,
   applications,
+  browserSession,
   analytics,
   notifications,
   automation,

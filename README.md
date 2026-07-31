@@ -36,7 +36,7 @@ pnpm dev
 | -------- | ---------------------------- | ------------------------------------------------------- |
 | Web      | http://localhost:3000        | Next.js dashboard + Auth.js                             |
 | API      | http://localhost:3001/api    | NestJS REST gateway                                     |
-| Browser  | http://localhost:3002/health | Plugin runtime stub (`/plugins` lists loaded providers) |
+| Browser  | http://localhost:3002/health | Playwright runtime (`/execute`, `/plugins`) |
 | Postgres | localhost:5432               | Database                                                |
 | Redis    | localhost:6379               | BullMQ                                                  |
 | Ollama   | http://localhost:11434       | Local LLM + embeddings (M3)                             |
@@ -48,6 +48,14 @@ pnpm dev
 | Email    | `demo@autoapply.ai` |
 | Password | `demo123456`        |
 
+## Milestone 4 (LinkedIn apply)
+
+- Import LinkedIn cookies under **Settings** (Playwright `storageState` JSON).
+- Add a job with a LinkedIn URL, then **Apply on LinkedIn** from Jobs.
+- Track status under **Applications** (worker → browser Playwright Easy Apply).
+
+Set in `.env`: `COOKIE_ENCRYPTION_KEY` (openssl rand -base64 32), `BROWSER_INTERNAL_TOKEN`, `BROWSER_URL`.
+
 ## Workspace layout
 
 ```
@@ -55,7 +63,7 @@ apps/
   web/       Next.js + Auth.js frontend
   api/       NestJS REST API
   worker/    BullMQ job consumer
-  browser/   Plugin runtime skeleton
+  browser/   Playwright plugin runtime (`POST /execute`)
 packages/
   sdk/       Internal API facade
   contracts/ DTOs, plugin interfaces, queue payloads
@@ -67,11 +75,11 @@ packages/
     user/    User domain + repository
     resume/  Resume upload, parse, skills (M2)
     jobs/    Manual job paste + AI match (M3)
-    applications/ stub
+    applications/ LinkedIn apply queue + status (M4)
     analytics/ stub
     notifications/ stub
   plugins/
-    linkedin/ greenhouse/ lever/ workday/  (stubs)
+    linkedin/ greenhouse/ lever/ workday/  (LinkedIn implemented in M4; others stub)
   llm/ embeddings/ agents/ prompts/ ai/  (Ollama-backed AI, M3)
   automation/  orchestration interfaces
   database/  Prisma schema and client

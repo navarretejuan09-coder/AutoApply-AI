@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  APPLICATION_EXECUTE_JOB_NAME,
+  APPLICATION_QUEUE_NAME,
   CORRELATION_ID_HEADER,
   DEFAULT_RESUME_MAX_BYTES,
   HEALTH_PING_JOB_NAME,
@@ -38,6 +40,7 @@ describe("enums", () => {
     assert.equal(JobQueueName.Health, "health");
     assert.equal(JobQueueName.Resume, "resume");
     assert.equal(JobQueueName.Jobs, "jobs");
+    assert.equal(JobQueueName.Applications, "applications");
   });
 });
 
@@ -55,6 +58,11 @@ describe("queue constants", () => {
   it("exports jobs queue identifiers", () => {
     assert.equal(JOB_QUEUE_NAME, "jobs");
     assert.equal(JOB_MATCH_JOB_NAME, "job.match");
+  });
+
+  it("exports applications queue identifiers", () => {
+    assert.equal(APPLICATION_QUEUE_NAME, "applications");
+    assert.equal(APPLICATION_EXECUTE_JOB_NAME, "application.execute");
   });
 });
 

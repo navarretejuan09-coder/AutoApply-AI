@@ -2,6 +2,7 @@ import {
   apiEnvSchema,
   authEnvSchema,
   browserEnvSchema,
+  cookieEncryptionEnvSchema,
   databaseEnvSchema,
   nodeEnvSchema,
   ollamaEnvSchema,
@@ -12,6 +13,7 @@ import {
   type ApiEnv,
   type AuthEnv,
   type BrowserEnv,
+  type CookieEncryptionEnv,
   type DatabaseEnv,
   type NodeEnv,
   type OllamaEnv,
@@ -27,7 +29,13 @@ export interface AppConfig {
   api: { url: string; port: number; webUrl: string };
   web: { nextAuthUrl: string; publicApiUrl: string };
   ai: { host: string; chatModel: string; embedModel: string };
-  browser: { port: number };
+  browser: {
+    port: number;
+    url: string;
+    headless: boolean;
+    internalToken: string;
+  };
+  cookieEncryption: { key: Buffer };
   resume: { maxBytes: number };
   nodeEnv: "development" | "test" | "production";
 }
@@ -40,6 +48,7 @@ class ConfigService {
   private webEnv?: WebEnv;
   private ollamaEnv?: OllamaEnv;
   private browserEnv?: BrowserEnv;
+  private cookieEncryptionEnv?: CookieEncryptionEnv;
   private resumeEnv?: ResumeEnv;
   private nodeEnvValue?: NodeEnv;
 
@@ -86,7 +95,19 @@ class ConfigService {
 
   get browser(): AppConfig["browser"] {
     this.browserEnv ??= parseEnv(browserEnvSchema);
-    return { port: this.browserEnv.BROWSER_PORT };
+    return {
+      port: this.browserEnv.BROWSER_PORT,
+      url: this.browserEnv.BROWSER_URL,
+      headless: this.browserEnv.BROWSER_HEADLESS,
+      internalToken: this.browserEnv.BROWSER_INTERNAL_TOKEN,
+    };
+  }
+
+  get cookieEncryption(): AppConfig["cookieEncryption"] {
+    this.cookieEncryptionEnv ??= parseEnv(cookieEncryptionEnvSchema);
+    return {
+      key: Buffer.from(this.cookieEncryptionEnv.COOKIE_ENCRYPTION_KEY, "base64"),
+    };
   }
 
   get resume(): AppConfig["resume"] {
@@ -109,6 +130,7 @@ class ConfigService {
       web: this.web,
       ai: this.ai,
       browser: this.browser,
+      cookieEncryption: this.cookieEncryption,
       resume: this.resume,
       nodeEnv: this.nodeEnv,
     };

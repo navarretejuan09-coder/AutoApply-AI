@@ -9,6 +9,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./dist/testing/index.js"
     }
   },
   "scripts": {
@@ -20,7 +24,9 @@
   },
   "dependencies": {
     "@autoapply/contracts": "workspace:*",
+    "@autoapply/database": "workspace:*",
     "@autoapply/events": "workspace:*",
+    "@autoapply/jobs": "workspace:*",
     "@autoapply/logger": "workspace:*"
   },
   "devDependencies": {

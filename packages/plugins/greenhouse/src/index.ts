@@ -11,9 +11,9 @@ function notImplemented(method: string): never {
 export function createGreenhousePlugin(): JobBoardPlugin {
   return {
     name: "greenhouse",
-    authenticate: async () => notImplemented("authenticate"),
+    authenticate: async (_ctx) => notImplemented("authenticate"),
     search: async () => notImplemented("search"),
     prepareApplication: async () => notImplemented("prepareApplication"),
-    executeApplication: async () => notImplemented("executeApplication"),
+    executeApplication: async (_plan, _ctx) => notImplemented("executeApplication"),
   };
 }
