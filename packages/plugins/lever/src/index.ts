@@ -11,9 +11,9 @@ function notImplemented(method: string): never {
 export function createLeverPlugin(): JobBoardPlugin {
   return {
     name: "lever",
-    authenticate: async (_ctx) => notImplemented("authenticate"),
+    authenticate: async () => notImplemented("authenticate"),
     search: async () => notImplemented("search"),
     prepareApplication: async () => notImplemented("prepareApplication"),
-    executeApplication: async (_plan, _ctx) => notImplemented("executeApplication"),
+    executeApplication: async () => notImplemented("executeApplication"),
   };
 }
